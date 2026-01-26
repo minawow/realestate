@@ -1,0 +1,1299 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>부동산 PPT 리포트 메이커 (사진 + 사업수지)</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --panel:rgba(255,255,255,.92);
+      --panel2:rgba(255,255,255,.96);
+      --line:rgba(17,24,39,.12);
+      --text:#0b1020;
+      --muted:rgba(11,16,32,.68);
+      --accent:#7c3aed;
+      --accent2:#22c55e;
+      --hot:#ff3b30;
+      --warn:#f59e0b;
+      --shadow: 0 18px 50px rgba(15,23,42,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,sans-serif;
+      background:
+        radial-gradient(1200px 700px at 20% 0%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(1200px 700px at 80% 10%, rgba(34,197,94,.12), transparent 62%),
+        radial-gradient(900px 600px at 60% 90%, rgba(59,130,246,.10), transparent 55%),
+        linear-gradient(180deg, #ffffff 0%, var(--bg) 55%, #ffffff 100%);
+      color:var(--text);
+    }
+    a{color:inherit}
+    .wrap{max-width:1200px; margin:0 auto; padding:20px;}
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(14px) saturate(180%);
+      background: rgba(255,255,255,.72);
+      border-bottom:1px solid var(--line); box-shadow: 0 8px 30px rgba(15,23,42,.08);
+    }
+    .topbar{display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;}
+    .brand{display:flex; align-items:center; gap:10px;}
+    .logo{
+      width:34px; height:34px; border-radius:12px;
+      background: linear-gradient(135deg, rgba(124,58,237,1), rgba(34,197,94,1));
+      box-shadow: 0 12px 30px rgba(124,58,237,.25);
+    }
+    h1{margin:0; font-size:16px; letter-spacing:.2px;}
+    .sub{margin:0; color:var(--muted); font-size:12px;}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+    .tab{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.9);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .tab.active{
+      border-color: rgba(124,58,237,.7);
+      background: linear-gradient(135deg, rgba(124,58,237,.35), rgba(34,197,94,.18));
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .toolbar{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+    button{
+      border:1px solid var(--line);
+      background: var(--panel);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    button:hover{background: rgba(255,255,255,.10)}
+    button.primary{
+      border-color: rgba(124,58,237,.8);
+      background: linear-gradient(135deg, rgba(124,58,237,.85), rgba(34,197,94,.35));
+      box-shadow: 0 18px 45px rgba(124,58,237,.25);
+    }
+    button.primary:hover{filter:brightness(1.03)}
+    button.danger{
+      border-color: rgba(255,59,48,.5);
+      color:#ffd6d3;
+      background: rgba(255,59,48,.10);
+    }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.9);
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+    }
+    .pill strong{color:var(--text)}
+    .grid{display:grid; gap:14px; grid-template-columns:1fr;}
+    @media(min-width:980px){ .grid{grid-template-columns: 1.05fr .95fr;} }
+    .panel{
+      border:1px solid var(--line);
+      background: var(--panel);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .panel h2{
+      margin:0 0 10px;
+      font-size:14px;
+      letter-spacing:.2px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .hint{color:var(--muted); font-size:12px; margin-top:2px}
+    .kpi{display:grid; gap:10px; grid-template-columns:repeat(2,1fr);}
+    @media(min-width:720px){ .kpi{grid-template-columns:repeat(4,1fr);} }
+    .kpi .box{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.95);
+      border-radius:18px;
+      padding:12px;
+    }
+    .kpi .t{color:var(--muted); font-weight:800; font-size:12px;}
+    .kpi .v{font-weight:1000; font-size:18px; margin-top:6px;}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .form{display:grid; gap:10px; grid-template-columns:1fr;}
+    @media(min-width:760px){ .form{grid-template-columns:repeat(2, 1fr);} }
+    label{display:block; color:var(--muted); font-size:12px; font-weight:800; margin:0 0 6px;}
+    input, select, textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.92);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+    }
+    textarea{min-height:90px; resize:vertical;}
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(124,58,237,.75);
+      box-shadow: 0 0 0 4px rgba(124,58,237,.18);
+    }
+    .photoCat{margin-top:12px; border:1px solid var(--line); border-radius:18px; overflow:hidden;}
+    .photoHead{
+      padding:12px 12px;
+      background: linear-gradient(135deg, rgba(124,58,237,.25), rgba(34,197,94,.10));
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .photoHead .title{font-weight:1000; letter-spacing:.2px;}
+    .drop{
+      margin:12px;
+      border:2px dashed rgba(234,240,255,.25);
+      border-radius:18px;
+      padding:14px;
+      background: rgba(255,255,255,.85);
+      transition:.15s;
+    }
+    .drop.drag{
+      border-color: rgba(34,197,94,.75);
+      background: rgba(34,197,94,.10);
+      transform: translateY(-1px);
+    }
+    .drop .mini{color:var(--muted); font-size:12px; margin-top:6px; line-height:1.5;}
+    .thumbs{
+      display:grid; gap:10px; padding:0 12px 14px;
+      grid-template-columns:repeat(2, 1fr);
+    }
+    @media(min-width:760px){ .thumbs{grid-template-columns:repeat(3, 1fr);} }
+    .thumb{
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      background: rgba(255,255,255,.92);
+      position:relative;
+    }
+    .thumb img{width:100%; height:140px; object-fit:cover; display:block;}
+    .thumb .cap{
+      padding:10px 10px;
+      font-size:12px;
+      font-weight:900;
+      color:rgba(11,16,32,.78);
+      border-top:1px solid var(--line);
+      background: rgba(255,255,255,.92);
+    }
+    .thumb .x{
+      position:absolute; top:8px; right:8px;
+      border:1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.9);
+      color:var(--text);
+      width:28px; height:28px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:1000;
+    }
+    .slides{display:grid; gap:14px;}
+    .slide{
+      width:100%;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.15);
+      box-shadow: var(--shadow);
+      background: #fff;
+      color:#111;
+    }
+    .slide .bar{
+      padding:14px 16px;
+      background: linear-gradient(90deg, #7c3aed, #22c55e);
+      color:#fff;
+      font-weight:1000;
+      letter-spacing:.2px;
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .slide .content{padding:16px;}
+    .slide .meta{font-weight:800; opacity:.95; font-size:13px;}
+    .imgGrid{
+      display:grid; gap:12px;
+      grid-template-columns:repeat(2, 1fr);
+      margin-top:10px;
+    }
+    @media(min-width:980px){ .imgGrid{grid-template-columns:repeat(3, 1fr);} }
+    .imgCard{
+      border:2px solid #111;
+      border-radius:14px;
+      overflow:hidden;
+      background:#fafafa;
+    }
+    .imgCard .label{
+      font-weight:1000;
+      padding:8px 10px;
+      border-bottom:2px solid #111;
+      background:#f3f4f6;
+      font-size:13px;
+    }
+    .imgCard img{width:100%; height:190px; object-fit:cover; display:block;}
+    .bizTitle{
+      text-align:center; font-weight:1000; letter-spacing:.6px;
+      color:#b91c1c; font-size:26px; margin:2px 0 10px;
+    }
+    table.biz{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:16px;
+    }
+    table.biz td, table.biz th{
+      border:2px solid #111;
+      padding:10px 8px;
+      vertical-align:middle;
+      word-break:keep-all;
+    }
+    .biz .center{text-align:center;}
+    .biz .right{text-align:right;}
+    .biz .subhead{font-weight:1000; text-align:center;}
+    .biz .green{background:#8fd14f;}
+    .biz .yellow{background:#fff200;}
+    .biz .note{font-size:13px;}
+    /* --- 사업수지 강조(그린/옐로우: 샘플과 동일 톤) --- */
+    :root{
+      --green:#92d050;  /* 샘플 초록 */
+      --yellow:#fff200; /* 샘플 노랑 */
+      --priceRed:#d32f2f; /* 매매가/순수익 빨강 */
+    }
+    /* 기본은 흰색(컬러 최소화) */
+    .hlPrice td{background: var(--yellow);}  /* 매매가(헤더) */
+    .hlSale td{background: transparent;}
+    /* 요청 구간만 컬러 적용 */
+    .hlSub td{background: var(--green);}   /* 소계 */
+    .hlLoan td{background: var(--yellow);} /* 예상대출이자비용 */
+    .hlTax td{background: var(--green);}   /* 자기자본 투자비용 */
+    .hlNet td{background: var(--yellow);}  /* 순수익 행 배경 */
+    /* 금액 강조(매매가처럼) */
+    .priceRed{color:var(--priceRed); font-weight:800;}
+    .netRed{color:var(--priceRed); font-weight:800; font-size:18px;}
+    .keepWhite{background:#ffffff !important;}
+.biz .labelCell{font-weight:1000;}
+    .biz .big{font-size:18px;}
+    .biz .red{color:#b91c1c; font-weight:1000;}
+    .page{display:none;}
+    .page.active{display:block;}
+    @media print{
+      @page { size: A4 landscape; margin: 0; }
+
+      body{background:#fff; color:#111;}
+      header,.no-print{display:none !important;}
+      .wrap{max-width:100%; padding:0;}
+
+      /* 인쇄 시에는 "출력(PPT)" 페이지만 강제 표시 */
+      .page{display:none !important;}
+      #t4{display:block !important;}
+      #t4 .panel{
+        display:block !important;
+        border:none !important;
+        box-shadow:none !important;
+        padding:0 !important;
+        background:#fff !important;
+      }
+      /* 출력 탭의 안내 문구는 인쇄에서 숨김 */
+      #t4 h2, #t4 .hint{display:none !important;}
+
+      .slides{gap:0;}
+
+      /* A4 가로 한 장을 슬라이드 1장으로 꽉 채움 */
+      .slide{
+        width:297mm;
+        height:210mm;
+        border:none;
+        border-radius:0;
+        box-shadow:none;
+        page-break-after: always;
+        overflow:hidden;
+      }
+      .slide:last-child{page-break-after:auto;}
+
+      /* 상단 바/콘텐츠 영역을 정확히 분리 */
+      .slide .bar{
+        padding:6mm 10mm;
+        height:18mm;
+        align-items:center;
+      }
+      .slide .content{
+        padding:6mm 10mm;
+        height: calc(210mm - 18mm);
+      }
+
+      /* ===== 사진 슬라이드: 사진을 크게(빨간 박스처럼) ===== */
+      .slide.img-slide .content{padding:5mm 8mm;}
+      .slide.img-slide .imgGrid{
+        height:100%;
+        margin-top:0;
+        grid-template-columns: 1fr; /* 기본: 1장일 때 */
+        align-content: stretch;
+      }
+      /* 2장 이상이면 2열로 */
+      .slide.img-slide[data-count="2"] .imgGrid,
+      .slide.img-slide[data-count="3"] .imgGrid,
+      .slide.img-slide[data-count="4"] .imgGrid,
+      .slide.img-slide[data-count="5"] .imgGrid,
+      .slide.img-slide[data-count="6"] .imgGrid,
+      .slide.img-slide[data-count="7"] .imgGrid,
+      .slide.img-slide[data-count="8"] .imgGrid,
+      .slide.img-slide[data-count="9"] .imgGrid,
+      .slide.img-slide[data-count="10"] .imgGrid,
+      .slide.img-slide[data-count="11"] .imgGrid,
+      .slide.img-slide[data-count="12"] .imgGrid{
+        grid-template-columns: 1fr 1fr;
+      }
+      /* 5장 이상이면 3열 (가로 인쇄에서 더 보기 좋음) */
+      .slide.img-slide[data-count="5"] .imgGrid,
+      .slide.img-slide[data-count="6"] .imgGrid,
+      .slide.img-slide[data-count="7"] .imgGrid,
+      .slide.img-slide[data-count="8"] .imgGrid,
+      .slide.img-slide[data-count="9"] .imgGrid,
+      .slide.img-slide[data-count="10"] .imgGrid,
+      .slide.img-slide[data-count="11"] .imgGrid,
+      .slide.img-slide[data-count="12"] .imgGrid{
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+      .slide.img-slide .imgCard{
+        display:flex;
+        flex-direction:column;
+        height:100%;
+      }
+      .slide.img-slide .imgCard .label{
+        padding:3mm 4mm;
+        font-size:12px;
+      }
+      .slide.img-slide .imgCard img{
+        width:100%;
+        height:100%;
+        flex:1 1 auto;
+        object-fit:contain; /* 지도/도면은 contain이 더 안전 */
+        background:#fff;
+      }
+
+      /* ===== 사업수지 표: 한 장에 깔끔하게 ===== */
+      .bizTitle{font-size:20px; margin:0 0 6px;}
+      table.biz{font-size:13px;}
+      table.biz td, table.biz th{padding:6px 6px;}
+      .biz .note{font-size:11px;}
+    }
+  
+  .dangerBtn{
+    background:#d32f2f !important;
+    color:#ffffff !important;
+    border:1px solid #b71c1c !important;
+    box-shadow:0 6px 16px rgba(0,0,0,.12) !important;
+  }
+  .dangerBtn:hover{filter:brightness(0.95);}
+  .dangerBtn:active{transform:translateY(1px);}
+
+  /* 사진 탭: 전체 삭제 버튼(고대비) */
+  button.danger, .danger, button[data-clear]{
+    background:#d32f2f !important;
+    color:#ffffff !important;
+    border:1px solid #b71c1c !important;
+    box-shadow:0 6px 16px rgba(0,0,0,.16) !important;
+    font-weight:800 !important;
+  }
+  button.danger:hover, .danger:hover, button[data-clear]:hover{filter:brightness(.95);}
+  button.danger:active, .danger:active, button[data-clear]:active{transform:translateY(1px);}
+
+</style>
+</head>
+<body>
+<header class="no-print">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>부동산 PPT 리포트 메이커</h1>
+          <p class="sub">입력 + 사진 첨부 → PPT처럼 출력(인쇄/PDF)</p>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="메뉴">
+        <button class="tab active" data-tab="t1">입력</button>
+        <button class="tab" data-tab="t2">사진첨부</button>
+        <button class="tab" data-tab="t3">사업수지</button>
+        <button class="tab" data-tab="t4">출력(PPT)</button>
+      </div>
+
+      <div class="toolbar">
+        <button class="primary" id="btnNew">새 분석표</button>
+        <button id="btnPrint">인쇄 / PDF 저장</button>
+        <button id="btnSave">저장(이 기기)</button>
+        <span class="pill"><span>자동저장</span> <strong>ON</strong></span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="page active" id="t1">
+    <div class="grid">
+      <div class="panel">
+        <h2>기본 입력 <span class="hint">글씨 큼 · 바로 숫자 계산됨</span></h2>
+
+        <div class="kpi">
+          <div class="box"><div class="t">평수</div><div class="v" id="kpi_pyeong">-</div></div>
+          <div class="box"><div class="t">매입가(총액)</div><div class="v" id="kpi_buy">-</div></div>
+          <div class="box"><div class="t">총투입비(소계)</div><div class="v" id="kpi_subtotal">-</div></div>
+          <div class="box"><div class="t">순수익(기준)</div><div class="v" id="kpi_net">-</div></div>
+        </div>
+
+        <div class="form" style="margin-top:12px">
+          <div><label>매물명</label><input id="f_name" placeholder="예: 용인 고기동 전원주택부지" /></div>
+          <div><label>주소</label><input id="f_addr" placeholder="예: 경기도 ○○시 ○○동..." /></div>
+          <div><label>면적(㎡)</label><input id="f_area_m2" inputmode="decimal" placeholder="예: 1917" /></div>
+          <div><label>평수(평) (자동 계산/직접 입력 가능)</label><input id="f_pyeong" inputmode="decimal" placeholder="예: 580" /></div>
+          <div><label>매매가(원)</label><input id="f_buy_price" inputmode="numeric" placeholder="예: 570000000" /></div>
+          <div><label>매도 단가(원/평)</label><input id="f_sell_per_pyeong" inputmode="text" placeholder="예: 380만원 또는 3,800,000" /><div id="sellHint" class="hint" style="margin-top:6px; display:none;"></div></div>
+          <div><label>예상 매도 금액(원) (직접 입력 시 우선 적용)</label><input id="f_sale_total" inputmode="numeric" placeholder="예: 38억, 3,800,000,000" /></div>
+          <div><label>자기자본 투자비용(원) (직접 입력/메모용)</label><input id="f_equity_override" inputmode="numeric" placeholder="예: 3억, 300,000,000" /></div>
+
+          <div><label>보유 기간(년)</label><input id="f_hold_years" inputmode="decimal" value="2" /></div>
+          <div><label>대출 연이자율(%)</label><input id="f_loan_rate" inputmode="decimal" value="6.7" /></div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <span class="pill">✅ <strong>사진</strong>은 다음 탭에서 업로드/드래그/복붙 가능</span>
+          <span class="pill">✅ <strong>출력</strong>은 “출력(PPT)” 탭에서 확인</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>자동 계산 규칙 <span class="hint">첨부 이미지와 동일 로직</span></h2>
+        <div class="hint" style="line-height:1.8">
+          • <strong>예상 매도 금액</strong> = 평수 × 매도단가(원/평)<br>
+          • <strong>소계</strong> = 매매가 + 산지전용부담금 + 취득세(총법무사비) + <strong>부동산 중개비(1%)</strong> + 공사비 합계<br>
+          • <strong>대출이자(년)</strong> = 대출금액 × 연이자율<br>
+          • <strong>예상대출이자비용</strong> = 대출이자(년) × 보유기간(년)<br>
+          • <strong>양도소득세</strong> = (예상매도금액 − 소계 − 예상대출이자비용) × 세율<br>
+          • <strong>순수익</strong> = 예상매도금액 − 소계 − 예상대출이자비용 − 양도소득세<br>
+          • <strong>자기자본 투자비용</strong> = 소계 − 대출금액
+        </div>
+        
+        <div class="row" style="margin-top:12px">
+          <span class="pill">📌 대출이자 시나리오</span>
+          <span class="pill"><span>월 이자</span> <strong id="loan_monthly">-</strong></span>
+          <span class="pill"><span>1년</span> <strong id="loan_1y">-</strong></span>
+          <span class="pill"><span>2년</span> <strong id="loan_2y">-</strong></span>
+          <span class="pill"><span>3년</span> <strong id="loan_3y">-</strong></span>
+        </div>
+<div class="row" style="margin-top:12px">
+          <button id="btnQuickFill">샘플값(첨부 이미지) 넣기</button>
+          <span class="pill"><span>팁</span><strong> 숫자는 쉼표 없이</strong> 넣어도 자동 포맷됩니다.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="t2">
+    <div class="panel">
+      <h2>사진 첨부 <span class="hint">업로드 · 드래그 · 복사/붙여넣기 · 여러 장 가능</span></h2>
+      <div class="hint">각 메뉴별로 사진을 넣어두면, 출력(PPT)에서 자동으로 “사진 위에 메뉴명”이 붙어서 출력됩니다.</div>
+      <div id="photoCats"></div>
+      <div class="row" style="margin-top:12px">
+        <span class="pill">📌 사진은 이 기기(브라우저)에 저장됩니다. 다른 기기에서는 JSON 내보내기/가져오기 사용.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="t3">
+    <div class="panel">
+      <h2>사업수지 입력(표 자동 출력) <span class="hint">체크/입력 → PPT처럼 결과표 생성</span></h2>
+      <div class="hint">값을 입력하면 출력(PPT) 탭에서 <strong>사업수지 분석표 한 장</strong>이 자동 생성됩니다.</div>
+
+      <div class="row" style="margin-top:10px">
+        <span class="pill">기본값: 취득세 6% · 양도소득세 55% · 보유기간 2년</span>
+        <span class="pill">부동산 중개비 <strong>1%</strong> 자동 반영</span>
+        <span class="pill">대출이자는 단리(연이자×년수)</span>
+      </div>
+
+      <div class="form" style="margin-top:12px">
+        <div><label>계약금(%)</label><input id="b_deposit_pct" inputmode="decimal" value="11" /></div>
+        <div><label>중도금(%)</label><input id="b_mid_pct" inputmode="decimal" value="0" /></div>
+        <div><label>잔금(%)</label><input id="b_balance_pct" inputmode="decimal" value="0" /></div>
+        <div><label>산지전용부담금(원)</label><input id="b_forest_fee" inputmode="numeric" placeholder="예: 24273054" /></div>
+        <div><label>산지전용부담금 메모(선택)</label><input id="b_forest_note" placeholder="예: 산지전용허가면적×단위면적당금액" /></div>
+        <div><label>취득세(총법무사비) 세율(%)</label><input id="b_acq_tax_pct" inputmode="decimal" value="6" /></div>
+        <div><label>토목공사(원)</label><input id="b_earthwork" inputmode="numeric" value="0" /></div>
+        <div><label>옹벽공사(원)</label><input id="b_retaining" inputmode="numeric" value="0" /></div>
+        <div><label>기타 공사/판매비(원)</label><input id="b_other_cost" inputmode="numeric" value="0" /></div>
+        <div><label>대출금액(원)</label><input id="b_loan_amt" inputmode="numeric" placeholder="예: 400000000" /></div>
+        <div><label>양도소득세 세율(%)</label><input id="b_cgt_pct" inputmode="decimal" value="55" /></div>
+        <div><label>비고(예: 2년 뒤 평당 250만원에 매도 시)</label><input id="b_sale_note" placeholder="예: 2년 뒤 평당 250만원에 매도 시" /></div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <button class="primary" id="btnRecalc">재계산</button>
+        <span class="pill"><span>현재 예상 매도</span> <strong id="live_sale">-</strong></span>
+        <span class="pill"><span>현재 순수익</span> <strong id="live_net">-</strong></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="t4">
+    <div class="panel">
+      <h2>출력(PPT) 미리보기 <span class="hint">인쇄/PDF 저장하면 페이지별로 출력됩니다</span></h2>
+      <div class="hint">“새 분석표”을 눌러 최신 입력값/사진을 반영하세요.</div>
+      <div class="slides" id="slides"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+  const $$ = (sel)=>Array.from(document.querySelectorAll(sel));
+  const PHOTO_CATS = ["토지 기본정보","지적도","건폐율","입지","경사도","건축설계"];
+
+  function num(v){
+    if(v===null||v===undefined) return 0;
+    const s = String(v).trim().replace(/,/g,'');
+    const n = parseFloat(s.replace(/[^0-9.\-]/g,''));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function money(v){
+    // 한국식 단위(억/만/천만 등) + 쉼표 + "원" + 공백 혼합 입력 지원
+    // 예) "14억", "14.5억", "14억 5천만", "380만원", "3,800,000", "38억"
+    if(v===null||v===undefined) return 0;
+    let s = String(v).trim();
+    if(!s) return 0;
+    s = s.replace(/,/g,'').replace(/원/g,'').replace(/\s+/g,' ');
+
+    // 숫자만
+    if(/^[\-]?[0-9.]+$/.test(s)) return num(s);
+
+    let total = 0;
+    const sign = s.startsWith('-') ? -1 : 1;
+    s = s.replace(/^[\-]/,'');
+
+    const eokMatch = s.match(/([0-9.]+)\s*억/);
+    if(eokMatch){ total += parseFloat(eokMatch[1]||'0') * 100000000; }
+
+    const cheonmanMatch = s.match(/([0-9.]+)\s*천만/);
+    if(cheonmanMatch){ total += parseFloat(cheonmanMatch[1]||'0') * 10000000; }
+
+    const baekmanMatch = s.match(/([0-9.]+)\s*백만/);
+    if(baekmanMatch){ total += parseFloat(baekmanMatch[1]||'0') * 1000000; }
+
+    const manwonSimple = s.match(/([0-9.]+)\s*만원/);
+    if(manwonSimple){ total += parseFloat(manwonSimple[1]||'0') * 10000; }
+
+    const manMatch = s.match(/([0-9.]+)\s*만(?![a-zA-Z])/);
+    if(manMatch && !manwonSimple){ total += parseFloat(manMatch[1]||'0') * 10000; }
+
+    const cheonSimple = s.match(/([0-9.]+)\s*천원/);
+    if(cheonSimple){ total += parseFloat(cheonSimple[1]||'0') * 1000; }
+
+    const baekSimple = s.match(/([0-9.]+)\s*백원/);
+    if(baekSimple){ total += parseFloat(baekSimple[1]||'0') * 100; }
+
+    // 단위가 하나도 매칭되지 않으면 숫자만 추출
+    if(total===0){
+      const fallback = parseFloat(s.replace(/[^0-9.]/g,''));
+      total = Number.isFinite(fallback) ? fallback : 0;
+    }
+    return total * sign;
+  }
+function won(n){
+    if(!Number.isFinite(n)) return "-";
+    const sign = n < 0 ? "-" : "";
+    const a = Math.abs(Math.round(n));
+    return sign + a.toLocaleString("ko-KR") + "원";
+  }
+
+
+  function addCommasIntString(s){
+    const neg = s.startsWith("-");
+    if(neg) s = s.slice(1);
+    s = s.replace(/^0+(?=\d)/,''); // leading zeros
+    const out = s.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return (neg? "-":"") + (out || "0");
+  }
+
+  function formatMoneyInputLive(el){
+    const raw = el.value;
+    if(!raw) return;
+    // 단위 포함 입력(억/만원 등)은 그대로 둠
+    if(/[억만천백]/.test(raw) || /만원|천원|백원/.test(raw)) return;
+    // 허용 문자: 숫자, 쉼표, -
+    if(/[^0-9,\-]/.test(raw)) return;
+
+    const start = el.selectionStart ?? raw.length;
+    const leftDigits = raw.slice(0, start).replace(/[^0-9]/g,'').length;
+
+    const digitsOnly = raw.replace(/,/g,'');
+    if(!digitsOnly || digitsOnly === "-") return;
+
+    const formatted = addCommasIntString(digitsOnly);
+    if(formatted === raw) return;
+
+    el.value = formatted;
+
+    // 커서 복원
+    let idx = 0, seen = 0;
+    while(idx < formatted.length){
+      if(/[0-9]/.test(formatted[idx])) seen++;
+      if(seen >= leftDigits){ idx++; break; }
+      idx++;
+    }
+    el.setSelectionRange(idx, idx);
+  }
+
+  function formatMoneyInputOnBlur(el){
+    const raw = (el.value||"").trim();
+    if(!raw) return;
+    if(/[억만천백]/.test(raw) || /만원|천원|백원/.test(raw)) return;
+    if(/[^0-9,\-]/.test(raw)) return;
+    const digitsOnly = raw.replace(/,/g,'');
+    if(!digitsOnly || digitsOnly === "-") return;
+    el.value = addCommasIntString(digitsOnly);
+  }
+  function pct(n){
+    if(!Number.isFinite(n)) return "-";
+    return (Math.round(n*10)/10).toLocaleString("ko-KR") + "%";
+  }
+  function normalizeSellPerPyeong(raw){
+    // '원/평' 단가 입력 보정:
+    // - "380만원" -> 3,800,000
+    // - "3,800,000" 그대로
+    // - 숫자만 380 -> 만원 단위로 보고 ×10,000
+    let s = String(raw??"").trim();
+    if(!s) return 0;
+    if(/[억만천백]/.test(s) || /만원|천원|백원/.test(s)) return money(s);
+    let v = num(s);
+    if(v>0 && v<=50000) v = v*10000;
+    return v;
+  }
+function safeText(s){
+    return String(s??"")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  }
+  function nowStamp(){ return new Date().toLocaleString("ko-KR"); }
+
+  const STORE_KEY = "re_ppt_maker_v2";
+  const AUTO_SAVE = true;
+
+  function emptyState(){
+    return {
+      basic:{name:"",addr:"",area_m2:"",pyeong:"",buy_price:"",sell_per_pyeong:"",sale_total:"",equity_override:"",hold_years:"2",loan_rate:"6.7", pyeongManual:false},
+      biz:{deposit_pct:"11",mid_pct:"0",balance_pct:"0",forest_fee:"",forest_note:"",acq_tax_pct:"6",earthwork:"0",retaining:"0",other_cost:"0",loan_amt:"",cgt_pct:"55",sale_note:""},
+      photos:Object.fromEntries(PHOTO_CATS.map(c=>[c,[]])),
+      _savedAt:null
+    };
+  }
+  let state = emptyState();
+
+  function readFormIntoState(){
+    state.basic = {
+      name:$("f_name").value, addr:$("f_addr").value,
+      area_m2:$("f_area_m2").value, pyeong:$("f_pyeong").value,
+      pyeongManual: (state.basic && state.basic.pyeongManual) ? true : false,
+      buy_price:$("f_buy_price").value, sell_per_pyeong:$("f_sell_per_pyeong").value,
+      hold_years:$("f_hold_years").value, loan_rate:$("f_loan_rate").value
+    };
+    state.biz = {
+      deposit_pct:$("b_deposit_pct").value, mid_pct:$("b_mid_pct").value, balance_pct:$("b_balance_pct").value,
+      forest_fee:$("b_forest_fee").value, forest_note:$("b_forest_note").value,
+      acq_tax_pct:$("b_acq_tax_pct").value,
+      earthwork:$("b_earthwork").value, retaining:$("b_retaining").value, other_cost:$("b_other_cost").value,
+      loan_amt:$("b_loan_amt").value, cgt_pct:$("b_cgt_pct").value, sale_note:$("b_sale_note").value
+    };
+    state._savedAt = new Date().toISOString();
+  }
+  function writeStateToForm(){
+    function applyMoneyFormatting(){
+      const ids = ["f_buy_price","f_sell_per_pyeong","f_sale_total","f_equity_override","b_forest_fee","b_earthwork","b_retaining","b_other_cost","b_loan_amt"];
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) formatMoneyInputOnBlur(el);
+      });
+    }
+
+
+    const b = state.basic || {};
+    $("f_name").value=b.name??""; $("f_addr").value=b.addr??"";
+    $("f_area_m2").value=b.area_m2??""; $("f_pyeong").value=b.pyeong??"";
+    $("f_buy_price").value=b.buy_price??""; $("f_sell_per_pyeong").value=b.sell_per_pyeong??"";
+    $("f_hold_years").value=b.hold_years??"2"; $("f_loan_rate").value=b.loan_rate??"6.7";
+
+    const z = state.biz || {};
+    $("b_deposit_pct").value=z.deposit_pct??"11"; $("b_mid_pct").value=z.mid_pct??"0"; $("b_balance_pct").value=z.balance_pct??"0";
+    $("b_forest_fee").value=z.forest_fee??""; $("b_forest_note").value=z.forest_note??"";
+    $("b_acq_tax_pct").value=z.acq_tax_pct??"6";
+    $("b_earthwork").value=z.earthwork??"0"; $("b_retaining").value=z.retaining??"0"; $("b_other_cost").value=z.other_cost??"0";
+    $("b_loan_amt").value=z.loan_amt??""; $("b_cgt_pct").value=z.cgt_pct??"55"; $("b_sale_note").value=z.sale_note??"";
+  }
+  function saveLocal(){
+    readFormIntoState();
+    try{
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    }catch(e){
+      console.warn("저장 실패(localStorage 용량 초과 가능):", e);
+    }
+  }
+  function loadLocal(){
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return false;
+    try{
+      const st = JSON.parse(raw);
+      state = Object.assign(emptyState(), st);
+      state.photos = state.photos || {};
+      PHOTO_CATS.forEach(c=>{ if(!Array.isArray(state.photos[c])) state.photos[c]=[]; });
+      return true;
+    }catch(e){ return false; }
+  }
+
+  function computePyeong(){
+    const area = num($("f_area_m2").value);
+    const pIn = num($("f_pyeong").value);
+    // 1평 = 3.305785㎡
+    const manual = !!(state.basic && state.basic.pyeongManual);
+    if(manual && pIn>0) return pIn;
+    if(area>0) return area/3.305785;
+    if(pIn>0) return pIn;
+    return 0;
+  }
+  function computeSaleAmount(){
+    const p = computePyeong();
+    const direct = money($("f_sale_total").value);
+    if(direct>0) return direct;
+
+    const spRaw = $("f_sell_per_pyeong").value;
+    const sp = normalizeSellPerPyeong(spRaw);
+
+    // 실수 방지: 원/평 칸에 '총매도금액(예: 38억=3,800,000,000)'을 넣는 경우가 많아서
+    // 원/평이 10억 이상이면 "총매도금액"으로 간주(단가 곱셈을 하지 않음)
+    if(sp>=1000000000) return sp;
+
+    if(p>0 && sp>0) return p*sp;
+    return 0;
+  }
+function bizCalc(){
+    const pyeong = computePyeong();
+    const buy = money($("f_buy_price").value);
+    const sale = computeSaleAmount();
+
+    const depPct = num($("b_deposit_pct").value);
+    const midPct = num($("b_mid_pct").value);
+    const balPct = num($("b_balance_pct").value);
+
+    const depAmt = buy*(depPct/100);
+    const midAmt = buy*(midPct/100);
+    const balAmt = buy*(balPct/100);
+
+    const forestFee = money($("b_forest_fee").value);
+    const acqPct = num($("b_acq_tax_pct").value);
+    const acqTax = buy*(acqPct/100);
+
+    
+    const brokerPct = 1; // 부동산 중개비 1%
+    const brokerFee = buy*(brokerPct/100);
+const earth = money($("b_earthwork").value);
+    const ret = money($("b_retaining").value);
+    const oth = money($("b_other_cost").value);
+
+    const subtotal = buy + forestFee + acqTax + brokerFee + earth + ret + oth;
+
+    const loanAmt = money($("b_loan_amt").value);
+    const loanRatePct = num($("f_loan_rate").value);
+    const holdYears = Math.max(0, num($("f_hold_years").value) || 0);
+
+    const loanInterestYear = loanAmt*(loanRatePct/100);
+    const loanInterestMonth = loanInterestYear/12;
+    const loanInterestTotal = loanInterestYear*holdYears;
+
+    const profitBeforeTax = sale - subtotal - loanInterestTotal;
+
+    const cgtPct = num($("b_cgt_pct").value);
+    const cgt = Math.max(0, profitBeforeTax)*(cgtPct/100);
+
+    const equityOverride = money($("f_equity_override").value);
+    const equity = equityOverride>0 ? equityOverride : (subtotal - loanAmt);
+    const net = profitBeforeTax - cgt;
+
+    return {pyeong,buy,sale,depPct,midPct,balPct,depAmt,midAmt,balAmt,forestFee,acqPct,acqTax,brokerPct,brokerFee,earth,ret,oth,subtotal,loanAmt,loanRatePct,holdYears,loanInterestYear,loanInterestMonth,loanInterestTotal,profitBeforeTax,cgtPct,cgt,equityOverride,equity,net};
+  }
+
+  function updateLive(){
+    const r = bizCalc();
+    $("kpi_pyeong").textContent = r.pyeong>0 ? (Math.round(r.pyeong*10)/10).toLocaleString("ko-KR")+"평" : "-";
+    $("kpi_buy").textContent = r.buy>0 ? won(r.buy) : "-";
+    $("kpi_subtotal").textContent = r.subtotal>0 ? won(r.subtotal) : "-";
+    $("kpi_net").textContent = r.sale>0 ? won(r.net) : "-";
+    $("live_sale").textContent = r.sale>0 ? won(r.sale) : "-";
+    $("live_net").textContent = r.sale>0 ? won(r.net) : "-";
+
+    // 대출이자 시나리오(1/2/3년) 표시
+    const lm = $("loan_monthly"); const l1 = $("loan_1y"); const l2 = $("loan_2y"); const l3 = $("loan_3y");
+    if(lm && l1 && l2 && l3){
+      const iy = r.loanInterestYear || 0;
+      lm.textContent = r.loanAmt>0 ? won(r.loanInterestMonth) : "-";
+      l1.textContent = r.loanAmt>0 ? won(iy*1) : "-";
+      l2.textContent = r.loanAmt>0 ? won(iy*2) : "-";
+      l3.textContent = r.loanAmt>0 ? won(iy*3) : "-";
+    
+    // 입력 실수 안내(원/평 칸에 총매도금액을 넣는 경우)
+    (function(){
+      const el = $("f_sell_per_pyeong");
+      const hint = document.getElementById("sellHint");
+      if(!el || !hint) return;
+      const v = normalizeSellPerPyeong(el.value);
+      if(v>=1000000000){
+        hint.style.display = "block";
+        hint.innerHTML = '<span class="warn">⚠</span> <strong>원/평</strong> 값이 너무 큽니다. 지금 입력은 <strong>총 매도 금액</strong>(예: 38억)으로 처리됩니다. '+
+                         '원/평 단가를 쓰려면 <strong>380만원</strong>처럼 입력하거나, 총매도금액은 아래 <strong>예상 매도 금액</strong> 칸에 입력하세요.';
+      }else{
+        hint.style.display = "none";
+        hint.textContent = "";
+      }
+    })();
+
+  }
+    const pIn = num($("f_pyeong").value);
+    const area = num($("f_area_m2").value);
+    const manual = !!(state.basic && state.basic.pyeongManual);
+    if(!manual && area>0){
+      $("f_pyeong").value = (Math.round(r.pyeong*10)/10).toString();
+    }
+  }
+
+  function renderPhotoCats(){
+    const host = $("photoCats");
+    host.innerHTML = "";
+    PHOTO_CATS.forEach(cat=>{
+      const box = document.createElement("div");
+      box.className = "photoCat";
+      box.innerHTML = `
+        <div class="photoHead">
+          <div>
+            <div class="title">${cat}</div>
+            <div class="hint">여러 장 가능 · 드래그&드롭 · 복사/붙여넣기 지원</div>
+          </div>
+          <div class="row">
+            <button data-add="${cat}">사진 업로드</button>
+            <button class="danger" data-clear="${cat}" aria-label="전체 삭제">전체 삭제</button>
+            <input type="file" accept="image/*" multiple style="display:none" data-file="${cat}">
+          </div>
+        </div>
+        <div class="drop" data-drop="${cat}" tabindex="0">
+          <strong>여기에 사진을 드래그해서 놓기</strong>
+          <div class="mini">또는 이 영역 클릭 후 Ctrl+V(붙여넣기)도 가능</div>
+        </div>
+        <div class="thumbs" id="thumbs_${cat}"></div>
+      `;
+      host.appendChild(box);
+
+      const btnAdd = box.querySelector(`[data-add="${cat}"]`);
+      const btnClear = box.querySelector(`[data-clear="${cat}"]`);
+      const input = box.querySelector(`[data-file="${cat}"]`);
+      const drop = box.querySelector(`[data-drop="${cat}"]`);
+
+      btnAdd.addEventListener("click", ()=>input.click());
+      input.addEventListener("change", (e)=>{
+        const files = Array.from(e.target.files||[]).filter(f=>f.type.startsWith("image/"));
+        addFiles(cat, files);
+        e.target.value = "";
+      });
+      btnClear.addEventListener("click", ()=>{
+        if(!confirm(`"${cat}" 사진을 모두 삭제할까요?`)) return;
+        state.photos[cat] = [];
+        saveLocal();
+        renderThumbs(cat);
+      });
+
+      drop.addEventListener("dragover", (e)=>{ e.preventDefault(); drop.classList.add("drag"); });
+      drop.addEventListener("dragleave", ()=>drop.classList.remove("drag"));
+      drop.addEventListener("drop", (e)=>{
+        e.preventDefault(); drop.classList.remove("drag");
+        const files = Array.from(e.dataTransfer.files||[]).filter(f=>f.type.startsWith("image/"));
+        addFiles(cat, files);
+      });
+
+      drop.addEventListener("paste", (e)=>{
+        const items = Array.from(e.clipboardData?.items || []);
+        const imgItems = items.filter(it=>it.type && it.type.startsWith("image/"));
+        if(imgItems.length){
+          e.preventDefault();
+          const files = imgItems.map(it=>it.getAsFile()).filter(Boolean);
+          addFiles(cat, files);
+        }
+      });
+
+      renderThumbs(cat);
+    });
+  }
+
+  function isOutputActive(){
+    const activePage = document.querySelector(".page.active");
+    return activePage && activePage.id === "t4";
+  }
+
+  function addFiles(cat, files){
+    if(!files || !files.length) return;
+    const list = files.slice(0, 12);
+    let pending = list.length;
+    list.forEach((file, idx)=>{
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        const dataUrl = reader.result;
+        state.photos[cat].push({
+          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+"_"+Math.random().toString(16).slice(2)),
+          name: file.name || `image_${Date.now()}_${idx}.png`,
+          dataUrl,
+          addedAt: new Date().toISOString()
+        });
+        pending--;
+        if(pending===0){
+          saveLocal();
+          renderThumbs(cat);
+          if(isOutputActive()) buildSlides();
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderThumbs(cat){
+    const wrap = $("thumbs_"+cat);
+    const imgs = state.photos[cat] || [];
+    wrap.innerHTML = "";
+    if(!imgs.length){
+      wrap.innerHTML = `<div class="hint" style="padding:10px 2px">아직 사진이 없습니다.</div>`;
+      return;
+    }
+    imgs.forEach(img=>{
+      const d = document.createElement("div");
+      d.className = "thumb";
+      d.innerHTML = `
+        <button class="x" title="삭제">×</button>
+        <img alt="${safeText(img.name)}" src="${img.dataUrl}">
+        <div class="cap">${cat}</div>
+      `;
+      d.querySelector(".x").addEventListener("click", ()=>{
+        state.photos[cat] = (state.photos[cat]||[]).filter(x=>x.id !== img.id);
+        saveLocal();
+        renderThumbs(cat);
+        if(isOutputActive()) buildSlides();
+      });
+      wrap.appendChild(d);
+    });
+  }
+
+  function buildBizSlide(r){
+    const saleNote = $("b_sale_note").value || "";
+    const forestNote = $("b_forest_note").value || "";
+    return `
+      <div class="slide">
+        <div class="bar">
+          <div>사업수지 분석표</div>
+          <div class="meta">${safeText(state.basic?.name||"")}</div>
+        </div>
+        <div class="content">
+          <div class="bizTitle">사업수지 분석표</div>
+          <table class="biz" aria-label="사업수지 분석표">
+            <colgroup>
+              <col style="width:16%"><col style="width:14%"><col style="width:18%">
+              <col style="width:10%"><col style="width:18%"><col style="width:24%">
+            </colgroup>
+
+            <tr class="hlPrice">
+              <td class="subhead center cellGray keepWhite" rowspan="7">토지매입비</td>
+              <td class="center labelCell" colspan="2">매매가</td>
+              <td class="center"></td>
+              <td class="right big"><span class="red">${won(r.buy)}</span></td>
+              <td class="center big">${r.pyeong? (Math.round(r.pyeong*10)/10).toLocaleString("ko-KR")+"평":"-"}</td>
+            </tr>
+
+            <tr>
+              <td class="center labelCell" rowspan="3">매매가</td>
+              <td class="center labelCell">계약금</td>
+              <td class="center">${pct(r.depPct)}</td>
+              <td class="right">${won(r.depAmt)}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="center labelCell">중도금</td>
+              <td class="center">${pct(r.midPct)}</td>
+              <td class="right">${won(r.midAmt)}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="center labelCell">납부해야할잔금</td>
+              <td class="center">${pct(r.balPct)}</td>
+              <td class="right">${won(r.balAmt)}</td>
+              <td></td>
+            </tr>
+
+            <tr>
+              <td class="center labelCell" rowspan="3">세금</td>
+              <td class="center labelCell">산지전용부담금</td>
+              <td class="center"></td>
+              <td class="right">${won(r.forestFee)}</td>
+              <td class="note">${safeText(forestNote)}</td>
+            </tr>
+            <tr>
+              <td class="center labelCell">취득세(총법무사비)</td>
+              <td class="center">${pct(r.acqPct)}</td>
+              <td class="right">${won(r.acqTax)}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="center labelCell">부동산 중개비</td>
+              <td class="center">${pct(r.brokerPct)}</td>
+              <td class="right">${won(r.brokerFee)}</td>
+              <td class="note">매매가 × 1%</td>
+            </tr>
+
+            <tr>
+              <td class="subhead center cellGray" rowspan="4">직접, 간접공사비,<br>판매비</td>
+              <td class="center labelCell">토목공사</td>
+              <td class="center labelCell"></td>
+              <td class="center"></td>
+              <td class="right">${won(r.earth)}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="center labelCell">옹벽공사</td>
+              <td class="center labelCell"></td>
+              <td class="center"></td>
+              <td class="right">${won(r.ret)}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="center labelCell">기타 공사/판매비</td>
+              <td class="center labelCell"></td>
+              <td class="center"></td>
+              <td class="right">${won(r.oth)}</td>
+              <td></td>
+            </tr>
+            <tr class="hlSub">
+              <td class="center labelCell" colspan="3">소계</td>
+              <td class="right big"><strong>${won(r.subtotal)}</strong></td>
+              <td></td>
+            </tr>
+
+            <tr>
+              <td class="subhead center" rowspan="4">금융비용</td>
+              <td class="center labelCell" colspan="3">대출금액</td>
+              <td class="right">${won(r.loanAmt)}</td>
+              <td class="center">${r.buy? (Math.round((r.loanAmt/r.buy)*100)).toLocaleString("ko-KR")+"% 대출 시":""}</td>
+            </tr>
+            <tr>
+              <td class="center labelCell" colspan="3">대출이자/년</td>
+              <td class="right">${won(r.loanInterestYear)}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td class="center labelCell" colspan="3">대출이자/월</td>
+              <td class="right">${won(r.loanInterestMonth)}</td>
+              <td></td>
+            </tr>
+            <tr class="hlLoan">
+              <td class="center labelCell" colspan="3">예상대출이자비용</td>
+              <td class="right"><strong>${won(r.loanInterestTotal)}</strong></td>
+              <td class="center">${r.holdYears? (r.holdYears+"년 산정"):""}</td>
+            </tr>
+
+            <tr>
+              <td class="center labelCell" colspan="4">양도소득세</td>
+              <td class="right"><strong>${won(r.cgt)}</strong></td>
+              <td class="center"><strong>${pct(r.cgtPct)}</strong></td>
+            </tr>
+            <tr class="hlSub">
+              <td class="center labelCell" colspan="4">자기자본 투자비용</td>
+              <td class="right"><strong>${won(r.equity)}</strong></td>
+              <td class="center"><strong>총 필요금액</strong></td>
+            </tr>
+
+            <tr>
+              <td class="center labelCell" rowspan="2">수익</td>
+              <td class="center labelCell" colspan="3">예상 매도 금액</td>
+              <td class="right"><strong>${won(r.sale)}</strong></td>
+              <td class="center"><strong>${safeText(saleNote)}</strong></td>
+            </tr>
+            <tr class="hlNet">
+              <td class="center labelCell" colspan="3">순수익</td>
+              <td class="right netRed"><strong>${won(r.net)}</strong></td>
+              <td class="center"></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildSlides(){
+    saveLocal();
+    const r = bizCalc();
+    const slides = [];
+    const titleMain = state.basic?.name || "매물 리포트";
+    const addr = state.basic?.addr || "";
+    const stamp = nowStamp();
+
+    slides.push(`
+      <div class="slide">
+        <div class="bar">
+          <div>${safeText(titleMain)}</div>
+          <div class="meta">${safeText(addr)} · ${safeText(stamp)}</div>
+        </div>
+        <div class="content">
+          <div style="border:2px solid #111; border-radius:16px; padding:14px;">
+            <div style="font-weight:1000; font-size:18px; margin-bottom:8px;">핵심 숫자</div>
+            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px;">
+              <div style="border:2px solid #111; border-radius:14px; padding:12px;">
+                <div style="font-weight:900; opacity:.8">평수</div>
+                <div style="font-weight:1000; font-size:20px; margin-top:6px;">${r.pyeong? (Math.round(r.pyeong*10)/10).toLocaleString("ko-KR")+"평":"-"}</div>
+              </div>
+              <div style="border:2px solid #111; border-radius:14px; padding:12px;">
+                <div style="font-weight:900; opacity:.8">매매가</div>
+                <div style="font-weight:1000; font-size:20px; margin-top:6px;">${r.buy? won(r.buy):"-"}</div>
+              </div>
+              <div style="border:2px solid #111; border-radius:14px; padding:12px;">
+                <div style="font-weight:900; opacity:.8">예상 매도 금액</div>
+                <div style="font-weight:1000; font-size:20px; margin-top:6px;">${r.sale? won(r.sale):"-"}</div>
+              </div>
+              <div style="border:2px solid #111; border-radius:14px; padding:12px;">
+                <div style="font-weight:900; opacity:.8">순수익(기준)</div>
+                <div style="font-weight:1000; font-size:20px; margin-top:6px;">${r.sale? won(r.net):"-"}</div>
+              </div>
+            </div>
+            <div style="margin-top:10px; font-size:13px; font-weight:900; opacity:.75;">
+              * 순수익 = 예상매도 − 소계 − 대출이자비용(${r.holdYears||0}년) − 양도소득세
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    PHOTO_CATS.forEach(cat=>{
+      const imgs = state.photos?.[cat] || [];
+      const gridHtml = imgs.length
+        ? imgs.map(im=>`
+          <div class="imgCard">
+            <div class="label">${safeText(cat)}</div>
+            <img src="${im.dataUrl}" alt="${safeText(im.name)}">
+          </div>`).join("")
+        : `<div style="border:2px dashed #111; border-radius:16px; padding:18px; font-weight:1000;">${safeText(cat)} 사진이 없습니다.</div>`;
+
+      slides.push(`
+        <div class="slide img-slide" data-cat="${safeText(cat)}" data-count="${imgs.length}">
+          <div class="bar">
+            <div>${safeText(cat)}</div>
+            <div class="meta">${safeText(titleMain)}</div>
+          </div>
+          <div class="content">
+            <div class="imgGrid">${gridHtml}</div>
+          </div>
+        </div>
+      `);
+    });
+
+    slides.push(buildBizSlide(r));
+    $("slides").innerHTML = slides.join("");
+  }
+
+  function printNow(){
+    try{ buildSlides(); }catch(e){ console.error("출력 갱신 중 오류:", e); }
+    setTimeout(()=>window.print(), 50);
+  }
+
+  function setTab(id){
+    $$(".page").forEach(p=>p.classList.remove("active"));
+    $(id).classList.add("active");
+    $$(".tab").forEach(t=>t.classList.toggle("active", t.dataset.tab===id));
+    if(id==="t2") renderPhotoCats();
+    if(id==="t4") buildSlides();
+  }
+  $$(".tab").forEach(btn=>btn.addEventListener("click", ()=>setTab(btn.dataset.tab)));
+
+  
+  $("btnPrint").addEventListener("click", printNow);
+  $("btnNew").addEventListener("click", ()=>{
+    if(!confirm("새 분석표를 시작할까요? (현재 입력/사진이 모두 초기화됩니다)")) return;
+    try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+    state = emptyState();
+    writeStateToForm();
+    renderPhotoCats();
+    applyMoneyFormatting();
+    updateLive();
+    buildSlides();
+    // 입력 탭으로 이동
+    setTab("t1");
+  });
+
+  $("btnSave").addEventListener("click", ()=>{ saveLocal(); alert("저장 완료!"); });
+  
+  $("btnReset").addEventListener("click", ()=>{
+    if(!confirm("모든 입력/사진을 초기화할까요?")) return;
+    localStorage.removeItem(STORE_KEY);
+    state = emptyState(); writeStateToForm(); renderPhotoCats(); updateLive(); buildSlides();
+  });
+  $("btnRecalc").addEventListener("click", ()=>{ updateLive(); buildSlides(); });
+
+  $("btnQuickFill").addEventListener("click", ()=>{
+    $("f_name").value="샘플 매물";
+    $("f_addr").value="—";
+    $("f_pyeong").value="580";
+    $("f_buy_price").value="570000000";
+    $("f_sell_per_pyeong").value="2500000";
+    $("f_hold_years").value="2";
+    $("f_loan_rate").value="6.7";
+    $("b_deposit_pct").value="11";
+    $("b_mid_pct").value="0";
+    $("b_balance_pct").value="0";
+    $("b_forest_fee").value="24273054";
+    $("b_forest_note").value="산지전용허가면적(1,917㎡)×단위면적당금액(12,662원)";
+    $("b_acq_tax_pct").value="6";
+    $("b_earthwork").value="0";
+    $("b_retaining").value="0";
+    $("b_other_cost").value="0";
+    $("b_loan_amt").value="400000000";
+    $("b_cgt_pct").value="55";
+    $("b_sale_note").value="2년 뒤 평당 250만원에 매도 시";
+    applyMoneyFormatting();
+    updateLive(); buildSlides(); saveLocal();
+    alert("샘플값을 넣었습니다. '사업수지' / '출력(PPT)' 탭에서 확인해보세요.");
+  });
+
+  const INPUT_IDS = ["f_name","f_addr","f_area_m2","f_pyeong","f_buy_price","f_sell_per_pyeong","f_hold_years","f_loan_rate","b_deposit_pct","b_mid_pct","b_balance_pct","b_forest_fee","b_forest_note","b_acq_tax_pct","b_earthwork","b_retaining","b_other_cost","b_loan_amt","b_cgt_pct","b_sale_note"];
+  // 평수 자동계산: 면적(㎡) 입력 시 자동 계산 / 평수칸 직접 수정 시 수동 모드
+  $("f_pyeong").addEventListener("input", ()=>{
+    state.basic = state.basic || {};
+    state.basic.pyeongManual = true;
+  });
+  $("f_area_m2").addEventListener("input", ()=>{
+    state.basic = state.basic || {};
+    state.basic.pyeongManual = false;
+  });
+  function onChange(){ updateLive(); if(AUTO_SAVE) saveLocal(); }
+  INPUT_IDS.forEach(id=>{ $(id).addEventListener("input", onChange); $(id).addEventListener("change", onChange); });
+  const MONEY_INPUT_IDS = [
+    "f_buy_price","f_sell_per_pyeong","f_sale_total","f_equity_override",
+    "b_forest_fee","b_earthwork","b_retaining","b_other_cost","b_loan_amt"
+  ];
+  MONEY_INPUT_IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener("input", ()=>formatMoneyInputLive(el));
+    el.addEventListener("blur", ()=>formatMoneyInputOnBlur(el));
+  });
+
+
+  // init
+  loadLocal();
+  writeStateToForm();
+  renderPhotoCats();
+  updateLive();
+  buildSlides();
+})();
+</script>
+</body>
+</html>
