@@ -145,41 +145,13 @@
       .modal textarea{ height: 220px; } /* 한 화면에 입력 집중 */
     }
 
-
-    /* iOS-style header */
-    .ios-topbar{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);border-bottom:1px solid rgba(0,0,0,.06);padding:calc(10px + env(safe-area-inset-top)) 16px 12px;margin:-16px -16px 14px;}
-    .ios-topbar .row1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-    .ios-brand{display:flex;align-items:center;gap:10px;min-width:0;}
-    .ios-icon{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4b4be0,#8b5cf6);color:#fff;box-shadow:0 8px 24px rgba(75,75,224,.18);flex:0 0 auto;font-size:18px;}
-    .ios-titlewrap{min-width:0;}
-    .ios-title{font-size:22px;font-weight:900;letter-spacing:-.02em;margin:0;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .ios-sub{margin-top:4px;font-size:12px;color:rgba(0,0,0,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .ios-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.9);box-shadow:0 6px 18px rgba(0,0,0,.06);flex:0 0 auto;font-weight:800;}
-    .ios-chip .dot{width:8px;height:8px;border-radius:99px;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18);}
-    .ios-chip .label{font-size:13px;color:#111;}
-
 </style>
 </head>
 <body>
   <div class="wrap">
-    
-    <div class="ios-topbar">
-      <div class="row1">
-        <div class="ios-brand">
-          <div class="ios-icon">🗒️</div>
-          <div class="ios-titlewrap">
-            <h1 class="ios-title">하루기록</h1>
-            <div class="ios-sub">하루 마감으로 저장하고, 표는 새로 시작해요</div>
-          </div>
-        </div>
-        <div class="ios-chip" title="현재 작업일">
-          <span class="dot"></span>
-          <span class="label" id="todayLabel">--</span>
-        </div>
-      </div>
-    </div>
-</div>
-<div class="topbar">
+    <h1>📒 하루기록</h1>
+
+    <div class="topbar">
       <div class="row">
         <div class="pill">현재시각: <strong id="nowTxt">--:--</strong></div>
         <div class="pill">다음 기록 시작(자동): <strong id="autoStartTxt">--:--</strong></div>
@@ -235,8 +207,6 @@
 
     <div class="btns">
       <button id="btnCopy">📋 결과표 복사</button>
-      <button id="btnCloseDay">하루 마감(저장/리셋)</button>
-      <button id="btnCopyWeek">이번주 결과표 복사</button>
       <button id="btnExport">내보내기(JSON)</button>
       <button id="btnImport">가져오기(JSON)</button>
       <button id="btnClear" class="danger">전체삭제</button>
@@ -357,35 +327,7 @@
   }
   function nl2br(s){ return s.replace(/\n/g,"<br/>"); }
 
-  
-  // 시간순 정렬: 시작시간 기준(입력 순서가 뒤죽박죽이어도 표는 시간순)
-  function timeToMin(t){
-    if(!t || !/^\d{2}:\d{2}$/.test(t)) return null;
-    const [hh, mm] = t.split(":").map(Number);
-    return hh*60 + mm;
-  }
-  function sortLogsInPlace(arr){
-    if(!Array.isArray(arr) || arr.length <= 1) return arr;
-
-    const mins = arr.map(x=>timeToMin(x.start)).filter(v=>v!==null);
-    const hasLate = mins.some(v=>v>=18*60);
-    const hasEarly = mins.some(v=>v<=6*60);
-    const bumpEarly = hasLate && hasEarly;
-
-    const indexed = arr.map((x,i)=>({x,i}));
-    indexed.sort((a,b)=>{
-      let ma = timeToMin(a.x.start);
-      let mb = timeToMin(b.x.start);
-      ma = (ma===null) ? 1e9 : (bumpEarly && ma<=6*60 ? ma+24*60 : ma);
-      mb = (mb===null) ? 1e9 : (bumpEarly && mb<=6*60 ? mb+24*60 : mb);
-      if(ma!==mb) return ma-mb;
-      return a.i-b.i;
-    });
-    for(let i=0;i<indexed.length;i++) arr[i] = indexed[i].x;
-    return arr;
-  }
-function persist(){
-    sortLogsInPlace(logs); localStorage.setItem(K_LOGS, JSON.stringify(logs)); }
+  function persist(){ localStorage.setItem(K_LOGS, JSON.stringify(logs)); }
 
   function notifStatus(){
     const supported = ("Notification" in window);
@@ -611,7 +553,6 @@ function persist(){
   }
 
   function render(){
-    sortLogsInPlace(logs);
     const tb = $("tbody");
     if(!logs.length){
       tb.innerHTML = `<tr><td colspan="7" class="hint">아직 기록이 없어요. “지금 기록하기”로 시작해봐요.</td></tr>`;
@@ -796,162 +737,7 @@ function persist(){
   });
   $("btnPass").addEventListener("click", ()=>{ doPass(); closeModal(); });
 
-  function yyyyMm(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
-  function yyyyMmDd(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
-  function weekdayKo(d){
-    return ["일","월","화","수","목","금","토"][d.getDay()];
-  }
-
-  function loadArchive(){
-    try{ return JSON.parse(localStorage.getItem(ARCHIVE_KEY) || "{}") || {}; }catch(_){ return {}; }
-  }
-  function saveArchive(obj){
-    localStorage.setItem(ARCHIVE_KEY, JSON.stringify(obj));
-  }
-
-  function getActiveDate(){
-    const saved = localStorage.getItem(ACTIVE_DATE_KEY);
-    if(saved && /^\d{4}-\d{2}-\d{2}$/.test(saved)) return saved;
-    const today = yyyyMmDd(new Date());
-    localStorage.setItem(ACTIVE_DATE_KEY, today);
-    return today;
-  }
-  function setActiveDate(ymd){
-    localStorage.setItem(ACTIVE_DATE_KEY, ymd);
-    updateTodayLabel();
-  }
-
-  function updateTodayLabel(){
-    const ymd = getActiveDate();
-    const d = new Date(ymd+"T00:00:00");
-    const label = `${ymd} (${weekdayKo(d)})`;
-    const el = $("todayLabel");
-    if(el) el.textContent = label;
-  }
-
-  function closeDay(){
-    if(!logs.length){
-      // 그래도 날짜는 다음날로 넘길 수 있게 해줌
-      if(confirm("오늘 기록이 비어 있어요. 그래도 '하루 마감'하고 표를 리셋할까요?")){
-        advanceActiveDateBy1();
-        clearAll(false); // don't confirm again inside
-      }
-      return;
-    }
-
-    const activeYmd = getActiveDate();
-    const d = new Date(activeYmd+"T00:00:00");
-    const yymm = yyyyMm(d);
-    const archive = loadArchive();
-    archive[yymm] = archive[yymm] || { month: yymm, days: [] };
-
-    // 하루 단위로 저장 (같은 날짜가 이미 있으면 덮어쓰기)
-    const dayEntry = { date: activeYmd, weekday: weekdayKo(d), logs };
-    const idx = archive[yymm].days.findIndex(x=>x.date===activeYmd);
-    if(idx>=0) archive[yymm].days[idx] = dayEntry;
-    else archive[yymm].days.push(dayEntry);
-
-    // 날짜순 정렬
-    archive[yymm].days.sort((a,b)=> a.date.localeCompare(b.date));
-    saveArchive(archive);
-
-    // UI 리셋: logs 비우고 lastEnd도 "지금"으로
-    logs = [];
-    persist();
-    saveLast(new Date());
-    render();
-
-    // 다음 작업일로 자동 이동(오늘이 끝났다는 의미)
-    advanceActiveDateBy1();
-
-    alert(`하루 마감 완료! (${activeYmd})\n이번달(${yymm})에 저장했어요.`);
-  }
-
-  function advanceActiveDateBy1(){
-    const activeYmd = getActiveDate();
-    const base = new Date(activeYmd+"T00:00:00");
-    base.setDate(base.getDate()+1);
-    setActiveDate(yyyyMmDd(base));
-  }
-
-  // 자정이 지나 '오늘'이 바뀌어도 자동 리셋은 하지 않음.
-  // 대신 activeDate가 오늘보다 과거인데 기록이 남아 있으면, 사용자가 원할 때 '하루 마감'하면 돼요.
-  
-  async function copyWeekTable(){
-    const active = getActiveDate();
-    const base = new Date(active+"T00:00:00");
-    const day = base.getDay();
-    const diffToMon = (day === 0) ? -6 : (1 - day);
-    const mon = new Date(base); mon.setDate(base.getDate() + diffToMon);
-    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
-
-    const startYmd = yyyyMmDd(mon);
-    const endYmd = yyyyMmDd(sun);
-
-    const archive = loadArchive();
-    const days = [];
-    Object.keys(archive).forEach(mm=>{
-      const block = archive[mm];
-      (block?.days || []).forEach(d=>{
-        if(d.date >= startYmd && d.date <= endYmd) days.push(d);
-      });
-    });
-    days.sort((a,b)=> a.date.localeCompare(b.date));
-
-    if(!days.length){
-      alert("이번주에 저장된 기록이 아직 없어요. '하루 마감'을 먼저 해주세요.");
-      return;
-    }
-
-    const headers = ["시작","종료","내용","참고/메모","반성/칭찬","소요"];
-    const cellPlain = (v)=> String(v||"").replace(/\t/g," ").replace(/\r?\n/g," ");
-
-    let plain = "";
-    days.forEach(day=>{
-      const label = `${day.date} (${day.weekday})`;
-      plain += label + "\n";
-      plain += headers.join("\t") + "\n";
-      (day.logs||[]).forEach(x=>{
-        plain += [x.start, x.end, cellPlain(x.content), cellPlain(x.memo), cellPlain(x.reflect), cellPlain(x.dur)].join("\t") + "\n";
-      });
-      plain += "\n";
-    });
-
-    const ta = document.createElement("textarea");
-    ta.value = plain;
-    ta.setAttribute("readonly","");
-    ta.style.position = "fixed";
-    ta.style.left = "-9999px";
-    ta.style.top = "0";
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    ta.setSelectionRange(0, ta.value.length);
-    let ok = false;
-    try{ ok = document.execCommand("copy"); }catch(_){ ok = false; }
-    document.body.removeChild(ta);
-
-    if(ok){
-      alert(`이번주(${startYmd}~${endYmd}) 결과표 복사 완료! 노션에 붙여넣기 해주세요.`);
-    }else{
-      prompt("복사가 제한되어 있어요. 아래 내용을 복사해서 노션에 붙여넣기 하세요:", plain);
-    }
-  }
-
-function maybePromptNewDay(){
-    const active = getActiveDate();
-    const today = yyyyMmDd(new Date());
-    if(active !== today && logs.length){
-      // 조용히 표시만 (자동 팝업 금지)
-      // 사용자가 '하루 마감'을 누르면 저장/리셋됨.
-    }
-  }
-
-
-
   $("btnCopy").addEventListener("click", copyTableForNotion);
-  const bcd = $("btnCloseDay"); if(bcd) bcd.addEventListener("click", closeDay);
-  const bcw = $("btnCopyWeek"); if(bcw) bcw.addEventListener("click", copyWeekTable);
   $("btnExport").addEventListener("click", exportJSON);
   $("btnImport").addEventListener("click", importJSON);
   $("btnClear").addEventListener("click", clearAll);
