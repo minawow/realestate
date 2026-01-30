@@ -172,16 +172,6 @@ body{
   padding-left: calc(var(--page-pad) + env(safe-area-inset-left));
 }
 *, *:before, *:after{ box-sizing: border-box; }
-
-/* action-buttons-inline */
-td[data-label="작업"]{ white-space: nowrap; }
-td[data-label="작업"] button{
-  display: inline-block;
-  padding: 8px 10px;
-  font-size: 14px;
-  border-radius: 12px;
-}
-td[data-label="작업"] button + button{ margin-left: 8px; }
 </style>
 </head>
 <body>
@@ -192,7 +182,7 @@ td[data-label="작업"] button + button{ margin-left: 8px; }
         <div class="ios-brand">
           <div class="ios-icon">🗒️</div>
           <div class="ios-titlewrap">
-            <h1 class="ios-title">미나의 하루기록</h1>
+            <h1 class="ios-title">하루기록</h1>
             <div class="ios-sub">하루 마감으로 저장하고, 표는 새로 시작해요</div>
           </div>
         </div>
@@ -758,25 +748,10 @@ function persist(){
   }
 
   function load(){
-    /* ko-input-hints */
-    try{
-      document.documentElement.lang = "ko";
-      ["mContent","mMemo","mReflect"].forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        el.setAttribute("lang","ko");
-        el.setAttribute("inputmode","text");
-        el.setAttribute("autocapitalize","none");
-        el.setAttribute("autocomplete","off");
-        el.setAttribute("spellcheck","false");
-      });
-    }catch(_){}
-
     try{ logs = JSON.parse(localStorage.getItem(K_LOGS) || "[]") || []; }catch(e){ logs = []; }
     lastEnd = parseLast();
     if(!lastEnd) saveLast(new Date());
     render();
-    updateTodayLabel();
     updateHeaderTimes();
     setNotifPill();
   }
@@ -864,12 +839,9 @@ function persist(){
   }
 
   function updateTodayLabel(){
-    // ✅ 상단 날짜는 현재 기기/PC의 '오늘' 날짜(요일) 기준
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth()+1).padStart(2,"0");
-    const d = String(now.getDate()).padStart(2,"0");
-    const label = `${y}-${m}-${d} (${weekdayKo(now)})`;
+    const ymd = getActiveDate();
+    const d = new Date(ymd+"T00:00:00");
+    const label = `${ymd} (${weekdayKo(d)})`;
     const el = $("todayLabel");
     if(el) el.textContent = label;
   }
