@@ -72,7 +72,55 @@
       }
       .right{ text-align:left; }
     }
-  </style>
+  
+    /* iPhone Bottom Sheet Popup for 기록 (minimal change) */
+    body.modal-open { overflow: hidden; }
+    @media (max-width: 640px){
+      .modal-back{
+        align-items: flex-end !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        padding-bottom: env(safe-area-inset-bottom) !important;
+      }
+      .modal{
+        width: 100% !important;
+        border-radius: 18px 18px 0 0 !important;
+        max-height: 88vh !important;
+        overflow: hidden !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+      }
+      .modal .sheet-scroll{
+        max-height: 88vh;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .modal .sheet-head{
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: rgba(255,255,255,0.98);
+        backdrop-filter: saturate(180%) blur(10px);
+        border-bottom: 1px solid var(--b);
+        padding: 12px 12px 10px;
+      }
+      .modal .sheet-body{
+        padding: 12px;
+      }
+      .modal .sheet-foot{
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        background: rgba(255,255,255,0.98);
+        border-top: 1px solid var(--b);
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      }
+      .modal textarea{ height: 160px; }
+      .modal .btns button{ width: 100%; }
+    }
+
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -147,6 +195,8 @@
   <!-- Modal -->
   <div class="modal-back" id="modalBack" role="dialog" aria-modal="true">
     <div class="modal">
+    <div class="sheet-scroll">
+
       <div class="row" style="justify-content:space-between;">
         <h2 id="modalTitle">🕐 지금 기록</h2>
         <button id="btnClose">닫기</button>
@@ -155,7 +205,9 @@
       <div class="row" style="margin-bottom:10px;">
         <div class="pill">시작: <strong id="mStart">--:--</strong></div>
         <div class="pill">종료: <strong id="mEnd">--:--</strong></div>
-        <div class="pill">소요: <strong id="mDur">--</strong></div>
+        <div class="pill">소요: <strong id="mDur">--</strong>
+    </div>
+</div>
       </div>
 
       <div class="mini" id="editTimeBox" style="display:none; margin-bottom:10px;">
@@ -359,11 +411,11 @@
     $("btnSave").textContent = "저장";
     $("modalTitle").textContent = "🕐 지금 기록";
     computeTimesPreview();
-    $("modalBack").style.display = "flex";
+    $("modalBack").style.display = "flex"; document.body.classList.add("modal-open");
     setTimeout(()=> $("mContent").focus(), 50);
   }
   function closeModal(){
-    $("modalBack").style.display = "none";
+    $("modalBack").style.display = "none"; document.body.classList.remove("modal-open");
     $("editTimeBox").style.display = "none";
     $("mContent").value = "";
     $("mMemo").value = "";
@@ -425,7 +477,7 @@
     $("editTimeBox").style.display = "flex";
     $("editStart").value = hhmmFromText(row.start);
     $("editEnd").value = hhmmFromText(row.end);
-    $("modalBack").style.display = "flex";
+    $("modalBack").style.display = "flex"; document.body.classList.add("modal-open");
     setTimeout(()=> $("mContent").focus(), 50);
   }
 
