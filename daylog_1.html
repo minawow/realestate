@@ -73,37 +73,41 @@
       .right{ text-align:left; }
     }
   
-    /* Mobile modal usability (iPhone Safari) */
-    .modal-back{ -webkit-overflow-scrolling: touch; }
-    .modal{ max-height: calc(100vh - 24px); overflow:auto; }
+    /* iPhone-friendly 기록 페이지(전체 화면) */
+    body.page-open { overflow: hidden; }
+    .record-page {
+      position: fixed; inset: 0;
+      display: none;
+      background: #fff;
+      z-index: 9999;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .record-page .rp-scroll{
+      height: 100%;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .record-page .rp-head{
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(255,255,255,0.98);
+      backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--b);
+      padding: 12px 12px 10px;
+    }
+    .record-page .rp-body{ padding: 12px; }
+    .record-page .rp-foot{
+      position: sticky; bottom: 0; z-index: 10;
+      background: rgba(255,255,255,0.98);
+      border-top: 1px solid var(--b);
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    }
+    .record-page textarea{ height: 130px; }
     @media (max-width: 640px){
-      .modal-back{ align-items:flex-start; justify-content:center; padding: 12px; padding-top: calc(12px + env(safe-area-inset-top)); }
-      .modal{ width: 100%; border-radius: 14px; max-height: calc(100vh - 24px - env(safe-area-inset-top)); }
-      textarea{ height: 120px; }
-      .grid{ gap: 10px; }
-      /* Make modal header sticky so close/save always reachable */
-      .modal .row.sticky-head{
-        position: sticky; top: 0; z-index: 5;
-        background: #fff;
-        padding-top: 4px;
-        border-bottom: 1px solid var(--b);
-        margin: -14px -14px 10px;
-        padding-left: 14px; padding-right: 14px;
-      }
-      /* Make action buttons sticky at bottom inside modal */
-      .modal .btns.sticky-foot{
-        position: sticky; bottom: 0; z-index: 5;
-        background:#fff;
-        padding-bottom: calc(8px + env(safe-area-inset-bottom));
-        border-top: 1px solid var(--b);
-        margin: 10px -14px -14px;
-        padding-left: 14px; padding-right: 14px;
-        padding-top: 10px;
-      }
+      .record-page textarea{ height: 160px; }
+      .record-page .btns button{ width: 100%; }
     }
 
-
-    body.modal-open{ overflow:hidden; }
 </style>
 </head>
 <body>
@@ -168,8 +172,6 @@
       <button id="btnCopy">📋 결과표 복사</button>
       <button id="btnExport">내보내기(JSON)</button>
       <button id="btnImport">가져오기(JSON)</button>
-      <button id="btnExportCSV">내보내기(CSV)</button>
-      <button id="btnImportCSV">가져오기(CSV)</button>
       <button id="btnClear" class="danger">전체삭제</button>
     </div>
     <div class="hint">
@@ -178,55 +180,59 @@
     </div>
   </div>
 
-  <!-- Modal -->
-  <div class="modal-back" id="modalBack" role="dialog" aria-modal="true">
-    <div class="modal">
-      <div class="row sticky-head" style="justify-content:space-between;">
-        <h2 id="modalTitle">🕐 지금 기록</h2>
-        <button id="btnClose">닫기</button>
-      </div>
-
-      <div class="row" style="margin-bottom:10px;">
-        <div class="pill">시작: <strong id="mStart">--:--</strong></div>
-        <div class="pill">종료: <strong id="mEnd">--:--</strong></div>
-        <div class="pill">소요: <strong id="mDur">--</strong></div>
-      </div>
-
-      <div class="mini" id="editTimeBox" style="display:none; margin-bottom:10px;">
-        <div>
-          <label style="margin-bottom:6px;">시작시간(수정)</label>
-          <input type="time" id="editStart" />
+  <!-- Record Page (full screen) -->
+  <div class="record-page" id="recordPage" aria-hidden="true">
+    <div class="rp-scroll">
+      <div class="rp-head">
+        <div class="row" style="justify-content:space-between;">
+          <h2 id="modalTitle" style="margin:0;">🕐 지금 기록</h2>
+          <button id="btnClose">닫기</button>
         </div>
-        <div>
-          <label style="margin-bottom:6px;">종료시간(수정)</label>
-          <input type="time" id="editEnd" />
-        </div>
-        <div class="hint">• 수정 저장 시 시작/종료/소요가 함께 업데이트돼요.</div>
-      </div>
 
+        <div class="row" style="margin-top:10px;">
+          <div class="pill">시작: <strong id="mStart">--:--</strong></div>
+          <div class="pill">종료: <strong id="mEnd">--:--</strong></div>
+          <div class="pill">소요: <strong id="mDur">--</strong></div>
+        </div>
 
-      <div class="grid">
-        <div class="card">
-          <label>내용</label>
-          <textarea id="mContent" placeholder="예) 코딩, 성경필사, 장보기 ..."></textarea>
-        </div>
-        <div class="card">
-          <label>참고 / 메모</label>
-          <textarea id="mMemo" placeholder="예) 링크, 상황 설명, 필요한 메모 ..."></textarea>
-        </div>
-        <div class="card">
-          <label>반성 / 칭찬</label>
-          <textarea id="mReflect" placeholder="예) 반성: 폰 방황 10분 내로 / 칭찬: 집중 잘함"></textarea>
+        <div class="mini" id="editTimeBox" style="display:none; margin-top:10px;">
+          <div>
+            <label style="margin-bottom:6px;">시작시간(수정)</label>
+            <input type="time" id="editStart" />
+          </div>
+          <div>
+            <label style="margin-bottom:6px;">종료시간(수정)</label>
+            <input type="time" id="editEnd" />
+          </div>
+          <div class="hint">• 수정 저장 시 시작/종료/소요가 함께 업데이트돼요.</div>
         </div>
       </div>
 
-      <div class="btns">
-        <button id="btnSave" class="primary">저장</button>
-        <button id="btnPass">패스</button>
+      <div class="rp-body">
+        <div class="grid">
+          <div class="card">
+            <label>내용</label>
+            <textarea id="mContent" placeholder="예) 코딩, 성경필사, 장보기 ..."></textarea>
+          </div>
+          <div class="card">
+            <label>참고 / 메모</label>
+            <textarea id="mMemo" placeholder="예) 링크, 상황 설명, 필요한 메모 ..."></textarea>
+          </div>
+          <div class="card">
+            <label>반성 / 칭찬</label>
+            <textarea id="mReflect" placeholder="예) 반성: 폰 방황 10분 내로 / 칭찬: 집중 잘함"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="rp-foot">
+        <div class="btns" style="margin:0;">
+          <button id="btnSave" class="primary">저장</button>
+          <button id="btnPass">패스</button>
+        </div>
       </div>
     </div>
   </div>
-
 <script>
 (function(){
   const $ = (id)=>document.getElementById(id);
@@ -393,13 +399,11 @@
     $("btnSave").textContent = "저장";
     $("modalTitle").textContent = "🕐 지금 기록";
     computeTimesPreview();
-    $("modalBack").style.display = "flex";
-    document.body.classList.add("modal-open");
+    $("recordPage").style.display = "block"; $("recordPage").setAttribute("aria-hidden","false"); document.body.classList.add("page-open");
     setTimeout(()=> $("mContent").focus(), 50);
   }
   function closeModal(){
-    $("modalBack").style.display = "none";
-    document.body.classList.remove("modal-open");
+    $("recordPage").style.display = "none"; $("recordPage").setAttribute("aria-hidden","true"); document.body.classList.remove("page-open");
     $("editTimeBox").style.display = "none";
     $("mContent").value = "";
     $("mMemo").value = "";
@@ -461,7 +465,7 @@
     $("editTimeBox").style.display = "flex";
     $("editStart").value = hhmmFromText(row.start);
     $("editEnd").value = hhmmFromText(row.end);
-    $("modalBack").style.display = "flex";
+    $("recordPage").style.display = "block"; $("recordPage").setAttribute("aria-hidden","false"); document.body.classList.add("page-open");
     setTimeout(()=> $("mContent").focus(), 50);
   }
 
@@ -606,150 +610,6 @@
     }catch(e){
       alert("가져오기 실패: JSON 형식을 확인해줘요.");
     }
-
-  function csvEscape(v){
-    const s = String(v ?? "");
-    // Quote if contains comma, quote, or newline
-    if(/[",\r\n]/.test(s)){
-      return '"' + s.replace(/"/g, '""') + '"';
-    }
-    return s;
-  }
-
-  function toCSV(){
-    const headers = ["시작","종료","내용","참고/메모","반성/칭찬","소요"];
-    let csv = headers.map(csvEscape).join(",") + "\n";
-    logs.forEach(x=>{
-      const row = [
-        x.start || "",
-        x.end || "",
-        x.content || "",
-        x.memo || "",
-        x.reflect || "",
-        x.dur || ""
-      ];
-      csv += row.map(csvEscape).join(",") + "\n";
-    });
-    return csv;
-  }
-
-  async function exportCSV(){
-    if(!logs.length){ alert("내보낼 기록이 없어요."); return; }
-    const csv = toCSV();
-    // Prefer file download if possible; fallback to clipboard/prompt
-    try{
-      const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const d = new Date();
-      const name = `하루기록_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}.csv`;
-      a.href = url;
-      a.download = name;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url), 500);
-      alert("CSV 파일로 내보냈어요. (다운로드)"); 
-    }catch(e){
-      try{
-        await navigator.clipboard.writeText(csv);
-        alert("CSV를 클립보드에 복사했어요. 엑셀/시트/노션에 붙여넣기 가능!");
-      }catch(_){
-        prompt("아래 CSV를 복사해서 저장해두세요:", csv);
-      }
-    }
-  }
-
-  function parseCSV(text){
-    // Simple RFC4180-ish parser (supports quoted fields with commas/newlines)
-    const rows = [];
-    let i=0, field="", row=[], inQuotes=false;
-    while(i < text.length){
-      const c = text[i];
-      if(inQuotes){
-        if(c === '"'){
-          if(text[i+1] === '"'){ field += '"'; i += 2; continue; }
-          inQuotes = false; i++; continue;
-        }else{
-          field += c; i++; continue;
-        }
-      }else{
-        if(c === '"'){ inQuotes = true; i++; continue; }
-        if(c === ','){ row.push(field); field=""; i++; continue; }
-        if(c === '\n'){
-          row.push(field); field="";
-          // ignore empty last line
-          if(row.length && !(row.length===1 && row[0]==="")) rows.push(row);
-          row=[]; i++; continue;
-        }
-        if(c === '\r'){ i++; continue; }
-        field += c; i++; continue;
-      }
-    }
-    row.push(field);
-    if(row.length && !(row.length===1 && row[0]==="")) rows.push(row);
-    return rows;
-  }
-
-  function importCSV(){
-    const raw = prompt("CSV 내용을 붙여넣으세요:\n(첫 줄은 헤더: 시작,종료,내용,참고/메모,반성/칭찬,소요)");
-    if(!raw) return;
-    try{
-      const rows = parseCSV(raw.trim());
-      if(rows.length < 2){ throw new Error("rows"); }
-      // Expect header in first row; map columns by header text
-      const header = rows[0].map(s=>String(s).trim());
-      const idx = (name)=> header.findIndex(h=>h.replace(/\s+/g,"") === name.replace(/\s+/g,""));
-      const iStart = idx("시작");
-      const iEnd = idx("종료");
-      const iContent = idx("내용");
-      const iMemo = idx("참고/메모") >= 0 ? idx("참고/메모") : idx("참고/메모");
-      const iReflect = idx("반성/칭찬");
-      const iDur = idx("소요");
-      if(iStart<0 || iEnd<0 || iContent<0){ throw new Error("header"); }
-
-      // Convert rows to logs; times are HH:MM strings. We do not reconstruct exact dates; keep display times and recompute ISO using today.
-      const today = new Date();
-      const newLogs = [];
-      for(let r=1; r<rows.length; r++){
-        const cols = rows[r];
-        const startTxt = (cols[iStart] ?? "").trim();
-        const endTxt = (cols[iEnd] ?? "").trim();
-        const content = cols[iContent] ?? "";
-        const memo = (iMemo>=0 ? cols[iMemo] : "") ?? "";
-        const reflect = (iReflect>=0 ? cols[iReflect] : "") ?? "";
-        const dur = (iDur>=0 ? cols[iDur] : "") ?? "";
-
-        // Build ISO roughly for ordering (today base). If invalid, skip row.
-        if(!/^\d{1,2}:\d{2}$/.test(startTxt) || !/^\d{1,2}:\d{2}$/.test(endTxt)) continue;
-        let startD = dateWithTime(today, startTxt.padStart(5,"0"));
-        let endD = dateWithTime(today, endTxt.padStart(5,"0"));
-        if(endD < startD) endD.setDate(endD.getDate()+1);
-
-        newLogs.push({
-          id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()),
-          startISO: startD.toISOString(),
-          endISO: endD.toISOString(),
-          start: startTxt.padStart(5,"0"),
-          end: endTxt.padStart(5,"0"),
-          content,
-          memo,
-          reflect,
-          dur: dur || durationText(endD - startD)
-        });
-      }
-      if(!newLogs.length) throw new Error("empty");
-      logs = newLogs;
-      persist();
-      // lastEnd = end of last row
-      const le = new Date(logs[logs.length-1].endISO);
-      if(!isNaN(le.getTime())) saveLast(le);
-      render();
-      alert("CSV 가져오기 완료!");
-    }catch(e){
-      alert("CSV 가져오기 실패: 형식을 확인해줘요.");
-    }
-  }
   }
 
   function clearAll(){
@@ -789,9 +649,7 @@
   // Wire (버튼 작동 확실)
   $("btnOpen").addEventListener("click", openModal);
   $("btnClose").addEventListener("click", closeModal);
-  $("modalBack").addEventListener("click", (e)=>{ if(e.target === $("modalBack")) closeModal(); });
-
-  $("btnSave").addEventListener("click", ()=>{
+    $("btnSave").addEventListener("click", ()=>{
     if(editId){ commitEdit(); return; }
     addLogFromModal();
     closeModal();
@@ -802,9 +660,6 @@
   $("btnExport").addEventListener("click", exportJSON);
   $("btnImport").addEventListener("click", importJSON);
   $("btnClear").addEventListener("click", clearAll);
-
-  $("btnExportCSV").addEventListener("click", exportCSV);
-  $("btnImportCSV").addEventListener("click", importCSV);
 
   $("btnEnableNotif").addEventListener("click", toggleNotif);
 
