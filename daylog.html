@@ -243,6 +243,15 @@ td[data-label="내용"], td[data-label="참고/메모"], td[data-label="반성/�
 th[data-label="내용"], th[data-label="참고/메모"], th[data-label="반성/칭찬"]{
   width: 33.333% !important;
 }
+
+/* keep-col-widths */
+table{
+  table-layout: fixed !important; /* 내용이 길어져도 열 너비 고정 */
+}
+td[data-label="내용"], td[data-label="참고/메모"], td[data-label="반성/칭찬"]{
+  overflow-wrap: anywhere;
+  word-break: break-word; /* 긴 단어/URL도 칸 안에서 줄바꿈 */
+}
 </style>
 </head>
 <body>
