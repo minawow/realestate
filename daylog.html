@@ -120,6 +120,31 @@
       .modal .btns button{ width: 100%; }
     }
 
+
+    /* 기록 입력 탭 UI (모달 내부) */
+    .tabs { display:flex; gap:8px; }
+    .tabbtn{
+      flex:1 1 0;
+      border:1px solid var(--b);
+      background:#fff;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      min-height:44px;
+      cursor:pointer;
+    }
+    .tabbtn.active{
+      background: var(--ink);
+      color:#fff;
+      border-color: var(--ink);
+    }
+    .tabpane{ display:none; }
+    .tabpane.active{ display:block; }
+    .tabpane .card{ background: var(--card); }
+    @media (max-width: 640px){
+      .modal textarea{ height: 220px; } /* 한 화면에 입력 집중 */
+    }
+
 </style>
 </head>
 <body>
@@ -223,20 +248,34 @@
       </div>
 
 
-      <div class="grid">
-        <div class="card">
-          <label>내용</label>
-          <textarea id="mContent" placeholder="예) 코딩, 성경필사, 장보기 ..."></textarea>
+      
+        <div class="tabs" id="tabBar">
+          <button class="tabbtn active" data-tab="content">내용</button>
+          <button class="tabbtn" data-tab="memo">참고/메모</button>
+          <button class="tabbtn" data-tab="reflect">반성/칭찬</button>
         </div>
-        <div class="card">
-          <label>참고 / 메모</label>
-          <textarea id="mMemo" placeholder="예) 링크, 상황 설명, 필요한 메모 ..."></textarea>
+
+        <div class="tabpane active" id="pane-content" style="margin-top:10px;">
+          <div class="card">
+            <label>내용</label>
+            <textarea id="mContent" placeholder="예) 코딩, 성경필사, 장보기 ..."></textarea>
+          </div>
         </div>
-        <div class="card">
-          <label>반성 / 칭찬</label>
-          <textarea id="mReflect" placeholder="예) 반성: 폰 방황 10분 내로 / 칭찬: 집중 잘함"></textarea>
+
+        <div class="tabpane" id="pane-memo" style="margin-top:10px;">
+          <div class="card">
+            <label>참고 / 메모</label>
+            <textarea id="mMemo" placeholder="예) 링크, 상황 설명, 필요한 메모 ..."></textarea>
+          </div>
         </div>
-      </div>
+
+        <div class="tabpane" id="pane-reflect" style="margin-top:10px;">
+          <div class="card">
+            <label>반성 / 칭찬</label>
+            <textarea id="mReflect" placeholder="예) 반성: 폰 방황 10분 내로 / 칭찬: 집중 잘함"></textarea>
+          </div>
+        </div>
+
 
       <div class="btns">
         <button id="btnSave" class="primary">저장</button>
@@ -412,7 +451,7 @@
     $("modalTitle").textContent = "🕐 지금 기록";
     computeTimesPreview();
     $("modalBack").style.display = "flex"; document.body.classList.add("modal-open");
-    setTimeout(()=> $("mContent").focus(), 50);
+    if(window.setActiveTab){ window.setActiveTab("content"); } else { setTimeout(()=> $("mContent").focus(), 50); }
   }
   function closeModal(){
     $("modalBack").style.display = "none"; document.body.classList.remove("modal-open");
@@ -478,7 +517,7 @@
     $("editStart").value = hhmmFromText(row.start);
     $("editEnd").value = hhmmFromText(row.end);
     $("modalBack").style.display = "flex"; document.body.classList.add("modal-open");
-    setTimeout(()=> $("mContent").focus(), 50);
+    if(window.setActiveTab){ window.setActiveTab("content"); } else { setTimeout(()=> $("mContent").focus(), 50); }
   }
 
     function commitEdit(){
@@ -660,6 +699,34 @@
 
   // Wire (버튼 작동 확실)
   $("btnOpen").addEventListener("click", openModal);
+
+  function setActiveTab(name){
+    const bar = $("tabBar");
+    if(!bar) return;
+    bar.querySelectorAll(".tabbtn").forEach(b=>{
+      b.classList.toggle("active", b.getAttribute("data-tab")===name);
+    });
+    ["content","memo","reflect"].forEach(n=>{
+      const pane = $("pane-"+n);
+      if(pane) pane.classList.toggle("active", n===name);
+    });
+    // focus the active textarea
+    const focusId = (name==="content") ? "mContent" : (name==="memo" ? "mMemo" : "mReflect");
+    const el = $(focusId);
+    if(el) setTimeout(()=>el.focus(), 50);
+  }
+
+  function wireTabs(){
+    const bar = $("tabBar");
+    if(!bar) return;
+    bar.addEventListener("click", (e)=>{
+      const btn = e.target.closest(".tabbtn");
+      if(!btn) return;
+      setActiveTab(btn.getAttribute("data-tab"));
+    });
+  }
+
+  wireTabs();
   $("btnClose").addEventListener("click", closeModal);
   $("modalBack").addEventListener("click", (e)=>{ if(e.target === $("modalBack")) closeModal(); });
 
