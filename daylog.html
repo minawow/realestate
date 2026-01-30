@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>하루기록 (iPhone 완전안정 v10)</title>
+  <title>미나의 하루기록 (iPhone 완전안정 v10)</title>
   <style>
     :root { --b:#e5e7eb; --bg:#ffffff; --muted:#6b7280; --card:#f9fafb; --ink:#111827; }
     body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
@@ -68,8 +68,7 @@
         flex:0 0 92px;
         font-size:12px;
         color:var(--muted);
-        font-weight:800;
-      }
+        font-weight:800;}
       .right{ text-align:left; }
     }
   
@@ -172,6 +171,27 @@ body{
   padding-left: calc(var(--page-pad) + env(safe-area-inset-left));
 }
 *, *:before, *:after{ box-sizing: border-box; }
+
+/* action-buttons-inline */
+td[data-label="작업"]{ white-space: nowrap; }
+td[data-label="작업"] button{
+  display: inline-block;
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+td[data-label="작업"] button + button{ margin-left: 8px; 
+      /* width-tuning */
+      td[data-label="시작"]::before,
+      td[data-label="종료"]::before{
+        flex: 0 0 56px; /* 시작/종료 라벨 더 좁게 */
+      }
+      td[data-label="내용"]::before{
+        flex: 0 0 20%;   /* 라벨 1/5 */
+        max-width: 20%;
+      }
+
+}
 </style>
 </head>
 <body>
@@ -225,6 +245,7 @@ body{
 
     <div class="card">
       <div class="hint">
+        ✅ 바로해!  ✅ 중요순서 계속정리! ✅ NO중간 새치기!<br/>
         ✅ 시간은 자동으로 기록돼요. (휴대폰/PC 시계 기준)<br/>
         ✅ 저장하면 <b>이전 종료 시간 → 지금</b> 구간으로 저장돼요.<br/>
         ✅ 패스는 “기록할 내용 없음”으로, <b>시간만 갱신</b>돼요.<br/>
@@ -748,10 +769,25 @@ function persist(){
   }
 
   function load(){
+    /* ko-input-hints */
+    try{
+      document.documentElement.lang = "ko";
+      ["mContent","mMemo","mReflect"].forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.setAttribute("lang","ko");
+        el.setAttribute("inputmode","text");
+        el.setAttribute("autocapitalize","none");
+        el.setAttribute("autocomplete","off");
+        el.setAttribute("spellcheck","false");
+      });
+    }catch(_){}
+
     try{ logs = JSON.parse(localStorage.getItem(K_LOGS) || "[]") || []; }catch(e){ logs = []; }
     lastEnd = parseLast();
     if(!lastEnd) saveLast(new Date());
     render();
+    updateTodayLabel();
     updateHeaderTimes();
     setNotifPill();
   }
@@ -839,9 +875,12 @@ function persist(){
   }
 
   function updateTodayLabel(){
-    const ymd = getActiveDate();
-    const d = new Date(ymd+"T00:00:00");
-    const label = `${ymd} (${weekdayKo(d)})`;
+    // ✅ 상단 날짜는 현재 기기/PC의 '오늘' 날짜(요일) 기준
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth()+1).padStart(2,"0");
+    const d = String(now.getDate()).padStart(2,"0");
+    const label = `${y}-${m}-${d} (${weekdayKo(now)})`;
     const el = $("todayLabel");
     if(el) el.textContent = label;
   }
