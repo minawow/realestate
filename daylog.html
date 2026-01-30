@@ -145,614 +145,120 @@
       .modal textarea{ height: 220px; } /* 한 화면에 입력 집중 */
     }
 
+
+    /* Top tab navigation (iPhone-friendly, no overlay) */
+    .topnav{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #4b4be0;
+      padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
+      color: #fff;
+    }
+    .topnav .tabs2{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content: space-between;
+    }
+    .topnav .tab2{
+      flex: 1 1 0;
+      text-align:center;
+      padding: 10px 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.12);
+      font-weight: 700;
+      min-height: 44px;
+      border: 1px solid rgba(255,255,255,0.18);
+      cursor:pointer;
+      user-select:none;
+      white-space: nowrap;
+    }
+    .topnav .tab2.active{
+      background: rgba(255,255,255,0.28);
+      border-color: rgba(255,255,255,0.40);
+    }
+    .view{ display:none; }
+    .view.active{ display:block; }
+    .view-wrap{ padding-top: 12px; }
+    .minihead{
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255,255,255,0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--b);
+      padding: 10px 12px;
+      margin: -12px -12px 12px;
+    }
+    /* Make sure nothing overlays content */
+    .modal-back, .record-page{ display:none !important; }
+
 </style>
 </head>
 <body>
   <div class="wrap">
+  <div class="topnav">
+    <div class="tabs2" id="topTabs">
+      <div class="tab2 active" data-view="results">오늘 기록</div>
+      <div class="tab2" data-view="record">작성하기</div>
+      <div class="tab2" data-view="settings">설정</div>
+    </div>
+  </div>
+
+  <div class="view active" id="view-results">
+
     <h1>📒 하루기록</h1>
 
     <div class="topbar">
-      <div class="row">
-        <div class="pill">현재시각: <strong id="nowTxt">--:--</strong></div>
-        <div class="pill">다음 기록 시작(자동): <strong id="autoStartTxt">--:--</strong></div>
-        <div class="pill">알림(정시): <strong id="notifTxt">OFF</strong></div>
-        <button id="btnEnableNotif">정시 알림 켜기</button>
-        <button id="btnOpen">지금 기록하기</button>
-      </div>
-
-      <!-- 수동 시간 설정(요청 기능) -->
-      <div class="card" style="margin-top:10px;">
-        <div class="mini">
-          <label><input type="checkbox" id="manualTimeToggle" /> 시간 직접 설정</label>
-          <div class="pill">시작: <strong id="manualStartTxt">자동</strong></div>
-          <div class="pill">종료: <strong id="manualEndTxt">자동</strong></div>
-        </div>
-        <div class="mini" id="manualTimeInputs" style="display:none; margin-top:10px;">
-          <div>
-            <label style="margin-bottom:6px;">시작시간</label>
-            <input type="time" id="manualStart" />
-          </div>
-          <div>
-            <label style="margin-bottom:6px;">종료시간</label>
-            <input type="time" id="manualEnd" />
-          </div>
-          <div class="hint">• 저장할 때 이 시간이 적용돼요. (자정 넘김도 자동 처리)</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="hint">
-        ✅ 시간은 자동으로 기록돼요. (휴대폰/PC 시계 기준)<br/>
-        ✅ 저장하면 <b>이전 종료 시간 → 지금</b> 구간으로 저장돼요.<br/>
-        ✅ 패스는 “기록할 내용 없음”으로, <b>시간만 갱신</b>돼요.<br/>
-        ⚠️ 단일 HTML 파일(file://) 환경에서는 iOS 알림이 제한될 수 있어요. (표시는 ON/OFF 토글 기준)
-      </div>
-    </div>
-
-    <table aria-label="기록표">
-      <thead>
-        <tr>
-          <th style="width:70px;">시작</th>
-          <th style="width:70px;">종료</th>
-          <th>내용</th>
-          <th>참고/메모</th>
-          <th>반성/칭찬</th>
-          <th style="width:70px;">소요</th>
-          <th style="width:110px;">작업</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-
-    <div class="btns">
-      <button id="btnCopy">📋 결과표 복사</button>
-      <button id="btnExport">내보내기(JSON)</button>
-      <button id="btnImport">가져오기(JSON)</button>
-      <button id="btnClear" class="danger">전체삭제</button>
-    </div>
-    <div class="hint">
-      • “결과표 복사”는 노션/메모/엑셀에 바로 붙여넣기(표) 가능해요.<br/>
-      • “내보내기/가져오기”는 백업/복구용이에요.
-    </div>
-  </div>
-
-  <!-- Modal -->
-  <div class="modal-back" id="modalBack" role="dialog" aria-modal="true">
-    <div class="modal">
-    <div class="sheet-scroll">
-
-      <div class="row" style="justify-content:space-between;">
-        <h2 id="modalTitle">🕐 지금 기록</h2>
-        <button id="btnClose">닫기</button>
-      </div>
-
-      <div class="row" style="margin-bottom:10px;">
-        <div class="pill">시작: <strong id="mStart">--:--</strong></div>
-        <div class="pill">종료: <strong id="mEnd">--:--</strong></div>
-        <div class="pill">소요: <strong id="mDur">--</strong>
-    </div>
-</div>
-      </div>
-
-      <div class="mini" id="editTimeBox" style="display:none; margin-bottom:10px;">
-        <div>
-          <label style="margin-bottom:6px;">시작시간(수정)</label>
-          <input type="time" id="editStart" />
-        </div>
-        <div>
-          <label style="margin-bottom:6px;">종료시간(수정)</label>
-          <input type="time" id="editEnd" />
-        </div>
-        <div class="hint">• 수정 저장 시 시작/종료/소요가 함께 업데이트돼요.</div>
-      </div>
-
-
       
-        <div class="tabs" id="tabBar">
-          <button class="tabbtn active" data-tab="content">내용</button>
-          <button class="tabbtn" data-tab="memo">참고/메모</button>
-          <button class="tabbtn" data-tab="reflect">반성/칭찬</button>
+
+    <div class="card" style="margin-top:12px;">
+      <h3 style="margin:0 0 8px;">🕒 시간 직접 설정</h3>
+      <label class="row" style="gap:10px; align-items:center;">
+        <input type="checkbox" id="manualTime" />
+        <span>시간 직접 설정</span>
+      </label>
+      <div class="row" style="margin-top:10px;">
+        <div class="pill">시작: <strong id="manualStartLabel">자동</strong></div>
+        <div class="pill">종료: <strong id="manualEndLabel">자동</strong></div>
+      </div>
+      <div class="row" id="manualInputs" style="display:none; margin-top:10px;">
+        <div>
+          <label style="margin-bottom:6px;">시작</label>
+          <input type="time" id="manualStart" />
         </div>
-
-        <div class="tabpane active" id="pane-content" style="margin-top:10px;">
-          <div class="card">
-            <label>내용</label>
-            <textarea id="mContent" placeholder="예) 코딩, 성경필사, 장보기 ..."></textarea>
-          </div>
+        <div>
+          <label style="margin-bottom:6px;">종료</label>
+          <input type="time" id="manualEnd" />
         </div>
-
-        <div class="tabpane" id="pane-memo" style="margin-top:10px;">
-          <div class="card">
-            <label>참고 / 메모</label>
-            <textarea id="mMemo" placeholder="예) 링크, 상황 설명, 필요한 메모 ..."></textarea>
-          </div>
-        </div>
-
-        <div class="tabpane" id="pane-reflect" style="margin-top:10px;">
-          <div class="card">
-            <label>반성 / 칭찬</label>
-            <textarea id="mReflect" placeholder="예) 반성: 폰 방황 10분 내로 / 칭찬: 집중 잘함"></textarea>
-          </div>
-        </div>
-
-
-      <div class="btns">
-        <button id="btnSave" class="primary">저장</button>
-        <button id="btnPass">패스</button>
       </div>
     </div>
   </div>
-
-<script>
-(function(){
-  const $ = (id)=>document.getElementById(id);
-
-  const K_LOGS = "mina_daylog_logs_v10";
-  const K_LAST = "mina_daylog_last_end_v10";
-  const K_NOTIF_ENABLED = "mina_daylog_notif_enabled_v10";
-
-  let logs = [];
-  let lastEnd = null; // Date
-  let notifEnabled = (localStorage.getItem(K_NOTIF_ENABLED) === "1");
-  let editId = null;
-
-  function pad2(n){ return String(n).padStart(2,"0"); }
-  function fmtTime(d){ return pad2(d.getHours()) + ":" + pad2(d.getMinutes()); }
-  function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
-
-  function durationText(ms){
-    const m = Math.max(1, Math.round(ms/60000)); // 최소 1분
-    const h = Math.floor(m/60);
-    const mm = m%60;
-    if(h===0) return mm + "분";
-    if(mm===0) return h + "시간";
-    return h + "시간 " + mm + "분";
-  }
-
-  function parseLast(){
-    const s = localStorage.getItem(K_LAST);
-    if(!s) return null;
-    const d = new Date(s);
-    return isNaN(d.getTime()) ? null : d;
-  }
-  function saveLast(d){
-    lastEnd = d;
-    localStorage.setItem(K_LAST, d.toISOString());
-    updateHeaderTimes();
-  }
-
-  function escapeHtml(s){
-    return (s??"").replace(/[&<>"']/g, (c)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-  }
-  function nl2br(s){ return s.replace(/\n/g,"<br/>"); }
-
-  function persist(){ localStorage.setItem(K_LOGS, JSON.stringify(logs)); }
-
-  function notifStatus(){
-    const supported = ("Notification" in window);
-    const perm = supported ? Notification.permission : "unsupported";
-    return { supported, perm };
-  }
-  function setNotifPill(){
-    const on = notifEnabled === true;
-    $("notifTxt").textContent = on ? "ON" : "OFF";
-    $("btnEnableNotif").textContent = on ? "정시 알림 끄기" : "정시 알림 켜기";
-    const st = notifStatus();
-    let tip = "";
-    if(!st.supported) tip = "이 브라우저는 알림을 지원하지 않아요.";
-    else tip = "권한: " + st.perm + " (표시는 토글 ON/OFF 기준)";
-    $("notifTxt").title = tip;
-  }
-
-  async function toggleNotif(){
-    // 토글은 무조건 작동(표시 기준)
-    notifEnabled = !notifEnabled;
-    localStorage.setItem(K_NOTIF_ENABLED, notifEnabled ? "1" : "0");
-    setNotifPill();
-
-    // 켤 때만 권한 요청(가능한 경우). 실패해도 토글 표시 유지.
-    if(notifEnabled){
-      const st = notifStatus();
-      if(st.supported){
-        try{
-          const perm = await Notification.requestPermission();
-          // title 갱신
-          setNotifPill();
-          if(perm !== "granted"){
-            alert("알림 권한이 허용되지 않았어요. (설정에서 알림 허용 필요)");
-          }
-        }catch(e){
-          // 조용히 무시
-          setNotifPill();
-        }
-      }
-    }
-  }
-
-  // 수동 시간 설정 (요청 기능)
-  function manualEnabled(){ return $("manualTimeToggle").checked; }
-
-  function setManualUI(){
-    const on = manualEnabled();
-    $("manualTimeInputs").style.display = on ? "flex" : "none";
-    $("manualStartTxt").textContent = on ? ($("manualStart").value || "--:--") : "자동";
-    $("manualEndTxt").textContent = on ? ($("manualEnd").value || "--:--") : "자동";
-  }
-
-  function baseDateFromISO(iso){
-    const d = new Date(iso);
-    return isNaN(d.getTime()) ? new Date() : d;
-  }
-
-  function hhmmFromText(t){
-    // expects 'HH:MM'
-    if(!t) return "";
-    const m = String(t).match(/^(\d{1,2}):(\d{2})$/);
-    if(!m) return "";
-    return String(m[1]).padStart(2,'0') + ':' + m[2];
-  }
-
-  function dateWithTime(baseDate, hhmm){
-    const [hh, mm] = hhmm.split(":").map(Number);
-    const d = new Date(baseDate);
-    d.setHours(hh, mm, 0, 0);
-    return d;
-  }
-
-  // 자동 시작시간: 날짜가 바뀌었고 비정상적으로 커지면(18h 초과) 같은 날짜의 시간으로 보정
-  function autoStartFor(end){
-    if(!lastEnd) return end;
-    const s = new Date(lastEnd);
-    if(isNaN(s.getTime())) return end;
-    if(sameDay(s,end)) return s;
-    const diff = end - s;
-    if(diff > 18*60*60*1000){
-      const adj = new Date(end);
-      adj.setHours(s.getHours(), s.getMinutes(), 0, 0);
-      if(adj > end) adj.setDate(adj.getDate()-1);
-      return adj;
-    }
-    return s;
-  }
-
-  function computeTimesPreview(){
-    const endAuto = new Date();
-    let start = autoStartFor(endAuto);
-    let end = endAuto;
-
-    if(manualEnabled()){
-      const ms = $("manualStart").value;
-      const me = $("manualEnd").value;
-      if(ms && me){
-        // 기준 날짜는 "오늘"로
-        start = dateWithTime(endAuto, ms);
-        end = dateWithTime(endAuto, me);
-        // 자정 넘김 처리
-        if(end < start) end.setDate(end.getDate()+1);
-      }
-    }
-    $("mStart").textContent = fmtTime(start);
-    $("mEnd").textContent = fmtTime(end);
-    $("mDur").textContent = durationText(end - start);
-    return { start, end };
-  }
-
-  function updateHeaderTimes(){
-    $("nowTxt").textContent = fmtTime(new Date());
-    $("autoStartTxt").textContent = lastEnd ? fmtTime(autoStartFor(new Date())) : "--:--";
-    setManualUI();
-  }
-
-  function openModal(){
-    editId = null;
-    $("editTimeBox").style.display = "none";
-    $("btnSave").textContent = "저장";
-    $("modalTitle").textContent = "🕐 지금 기록";
-    computeTimesPreview();
-    $("modalBack").style.display = "flex"; document.body.classList.add("modal-open");
-    if(window.setActiveTab){ window.setActiveTab("content"); } else { setTimeout(()=> $("mContent").focus(), 50); }
-  }
-  function closeModal(){
-    $("modalBack").style.display = "none"; document.body.classList.remove("modal-open");
-    $("editTimeBox").style.display = "none";
-    $("mContent").value = "";
-    $("mMemo").value = "";
-    $("mReflect").value = "";
-    editId = null;
-    $("btnSave").textContent = "저장";
-    $("modalTitle").textContent = "🕐 지금 기록";
-  }
-
-  function addLogFromModal(){
-    const { start, end } = computeTimesPreview();
-    const row = {
-      id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()),
-      startISO: start.toISOString(),
-      endISO: end.toISOString(),
-      start: fmtTime(start),
-      end: fmtTime(end),
-      content: $("mContent").value || "",
-      memo: $("mMemo").value || "",
-      reflect: $("mReflect").value || "",
-      dur: durationText(end - start)
-    };
-    logs.push(row);
-    persist();
-    saveLast(end);
-    render();
-  }
-
-  function doPass(){
-    // 패스도 수동 시간이 켜져 있고 종료시간이 있으면 그걸로 기준시간 갱신
-    if(manualEnabled() && $("manualEnd").value){
-      const end = dateWithTime(new Date(), $("manualEnd").value);
-      saveLast(end);
-    }else{
-      saveLast(new Date());
-    }
-    render();
-  }
-
-  function delRow(id){
-    logs = logs.filter(x=>x.id!==id);
-    persist();
-    render();
-  }
-
-  function startEdit(id){
-    const row = logs.find(x=>x.id===id);
-    if(!row){ alert("수정할 항목을 찾을 수 없어요."); return; }
-    editId = id;
-    $("modalTitle").textContent = "✏️ 기록 수정";
-    $("btnSave").textContent = "수정 저장";
-    $("mContent").value = row.content || "";
-    $("mMemo").value = row.memo || "";
-    $("mReflect").value = row.reflect || "";
-    $("mStart").textContent = row.start || "--:--";
-    $("mEnd").textContent = row.end || "--:--";
-    $("mDur").textContent = row.dur || "--";
-    // 시작/종료 시간도 수정 가능
-    $("editTimeBox").style.display = "flex";
-    $("editStart").value = hhmmFromText(row.start);
-    $("editEnd").value = hhmmFromText(row.end);
-    $("modalBack").style.display = "flex"; document.body.classList.add("modal-open");
-    if(window.setActiveTab){ window.setActiveTab("content"); } else { setTimeout(()=> $("mContent").focus(), 50); }
-  }
-
-    function commitEdit(){
-    const idx = logs.findIndex(x=>x.id===editId);
-    if(idx < 0){ alert("수정할 항목을 찾을 수 없어요."); return; }
-    const row = logs[idx];
-    row.content = $("mContent").value;
-    row.memo = $("mMemo").value;
-    row.reflect = $("mReflect").value;
-
-    // 시간 수정(선택): 입력이 있으면 시작/종료/소요까지 업데이트
-    const es = $("editStart").value;
-    const ee = $("editEnd").value;
-    if(es && ee){
-      const base = baseDateFromISO(row.startISO || row.endISO || new Date().toISOString());
-      let start = dateWithTime(base, es);
-      let end = dateWithTime(base, ee);
-      if(end < start) end.setDate(end.getDate()+1); // 자정 넘김
-      row.startISO = start.toISOString();
-      row.endISO = end.toISOString();
-      row.start = fmtTime(start);
-      row.end = fmtTime(end);
-      row.dur = durationText(end - start);
-      // 마지막 기록을 수정했다면 다음 자동 시작 기준도 맞춰준다
-      if(idx === logs.length - 1){
-        saveLast(end);
-      }
-    }
-
-    persist();
-    render();
-    closeModal();
-  }
-
-  function render(){
-    const tb = $("tbody");
-    if(!logs.length){
-      tb.innerHTML = `<tr><td colspan="7" class="hint">아직 기록이 없어요. “지금 기록하기”로 시작해봐요.</td></tr>`;
-      return;
-    }
-    tb.innerHTML = logs.map(r=>`
-      <tr>
-        <td data-label="시작">${escapeHtml(r.start)}</td>
-        <td data-label="종료">${escapeHtml(r.end)}</td>
-        <td data-label="내용">${nl2br(escapeHtml(r.content))}</td>
-        <td data-label="참고/메모">${nl2br(escapeHtml(r.memo))}</td>
-        <td data-label="반성/칭찬">${nl2br(escapeHtml(r.reflect))}</td>
-        <td data-label="소요">${escapeHtml(r.dur)}</td>
-        <td class="right" data-label="작업">
-          <button data-edit="${r.id}">수정</button>
-          <button data-del="${r.id}">삭제</button>
-        </td>
-      </tr>
-    `).join("");
-
-    tb.querySelectorAll("button[data-del]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const id = btn.getAttribute("data-del");
-        if(confirm("이 기록을 삭제할까요?")) delRow(id);
-      });
-    });
-    tb.querySelectorAll("button[data-edit]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const id = btn.getAttribute("data-edit");
-        startEdit(id);
-      });
-    });
-  }
-
-    async function copyTableForNotion(){
-    if(!logs.length){ alert("복사할 기록이 없어요."); return; }
-    // 노션에 붙여넣기 최적: ① HTML table ② TSV(plain) 둘 다 클립보드에 넣기
-    const headers = ["시작","종료","내용","참고 / 메모","반성 및 칭찬","소요"];
-
-    const cellPlain = (v)=> String(v||"")
-      .replace(/\t/g," ")
-      .replace(/\r?\n/g," ");
-    const cellHtml = (v)=> escapeHtml(String(v||"")).replace(/\r?\n/g,"<br/>");
-
-    // TSV (plain)
-    let tsv = headers.join("\t") + "\n";
-    logs.forEach(x=>{
-      tsv += [x.start, x.end, cellPlain(x.content), cellPlain(x.memo), cellPlain(x.reflect), cellPlain(x.dur)].join("\t") + "\n";
-    });
-
-    // HTML table
-    let htmlTable = "<table><thead><tr>" + headers.map(h=>"<th>"+h+"</th>").join("") + "</tr></thead><tbody>";
-    logs.forEach(x=>{
-      htmlTable += "<tr>" +
-        "<td>"+escapeHtml(x.start||"")+"</td>" +
-        "<td>"+escapeHtml(x.end||"")+"</td>" +
-        "<td>"+cellHtml(x.content)+"</td>" +
-        "<td>"+cellHtml(x.memo)+"</td>" +
-        "<td>"+cellHtml(x.reflect)+"</td>" +
-        "<td>"+escapeHtml(x.dur||"")+"</td>" +
-      "</tr>";
-    });
-    htmlTable += "</tbody></table>";
-
-    try{
-      if(navigator.clipboard && window.ClipboardItem){
-        const item = new ClipboardItem({
-          "text/plain": new Blob([tsv], {type:"text/plain"}),
-          "text/html": new Blob([htmlTable], {type:"text/html"})
-        });
-        await navigator.clipboard.write([item]);
-      }else{
-        await navigator.clipboard.writeText(tsv);
-      }
-      alert("노션에 바로 붙여넣기 가능! (결과표 복사 완료)");
-    }catch(e){
-      // iOS 등에서 권한/지원 문제 시 fallback
-      try{ await navigator.clipboard.writeText(tsv); alert("노션에 바로 붙여넣기 가능! (텍스트로 복사 완료)"); }
-      catch(_){ prompt("아래 내용을 복사해서 노션에 붙여넣기 하세요:", tsv); }
-    }
-  }
-
-  async function exportJSON(){
-    const data = { version: 10, exportedAt: new Date().toISOString(), lastEndISO: lastEnd ? lastEnd.toISOString() : null, logs };
-    const text = JSON.stringify(data, null, 2);
-    try{
-      await navigator.clipboard.writeText(text);
-      alert("백업 JSON을 클립보드에 복사했어요. 노션/메모에 붙여넣어 저장해두세요.");
-    }catch(e){
-      prompt("아래 JSON을 복사해서 저장해두세요:", text);
-    }
-  }
-
-  function importJSON(){
-    const raw = prompt("백업 JSON을 붙여넣으세요:");
-    if(!raw) return;
-    try{
-      const data = JSON.parse(raw);
-      if(!data || !Array.isArray(data.logs)) throw new Error("형식 오류");
-      logs = data.logs;
-      persist();
-      const le = data.lastEndISO ? new Date(data.lastEndISO) : null;
-      if(le && !isNaN(le.getTime())) saveLast(le);
-      render();
-      alert("가져오기 완료!");
-    }catch(e){
-      alert("가져오기 실패: JSON 형식을 확인해줘요.");
-    }
-  }
-
-  function clearAll(){
-    if(!confirm("전체 기록을 삭제할까요? (되돌릴 수 없어요)")) return;
-    logs = [];
-    persist();
-    saveLast(new Date());
-    render();
-  }
-
-  function load(){
-    try{ logs = JSON.parse(localStorage.getItem(K_LOGS) || "[]") || []; }catch(e){ logs = []; }
-    lastEnd = parseLast();
-    if(!lastEnd) saveLast(new Date());
-    render();
-    updateHeaderTimes();
-    setNotifPill();
-  }
-
-  // 정시 알림/팝업 (페이지 열려 있을 때)
-  let lastHourFired = null;
-  function tick(){
-    updateHeaderTimes();
-    const d = new Date();
-    if(d.getMinutes()===0){
-      const key = d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate()+"-"+d.getHours();
-      if(lastHourFired !== key){
-        lastHourFired = key;
-        if(notifEnabled && ("Notification" in window) && Notification.permission==="granted"){
-          try{ new Notification("하루기록", { body: "정시 기록할 시간이에요." }); }catch(e){}
-        }
-        openModal();
-      }
-    }
-  }
-
-  // Wire (버튼 작동 확실)
-  $("btnOpen").addEventListener("click", openModal);
-
-  function setActiveTab(name){
-    const bar = $("tabBar");
-    if(!bar) return;
-    bar.querySelectorAll(".tabbtn").forEach(b=>{
-      b.classList.toggle("active", b.getAttribute("data-tab")===name);
-    });
-    ["content","memo","reflect"].forEach(n=>{
-      const pane = $("pane-"+n);
-      if(pane) pane.classList.toggle("active", n===name);
-    });
-    // focus the active textarea
-    const focusId = (name==="content") ? "mContent" : (name==="memo" ? "mMemo" : "mReflect");
-    const el = $(focusId);
-    if(el) setTimeout(()=>el.focus(), 50);
-  }
-
-  function wireTabs(){
-    const bar = $("tabBar");
-    if(!bar) return;
-    bar.addEventListener("click", (e)=>{
-      const btn = e.target.closest(".tabbtn");
-      if(!btn) return;
-      setActiveTab(btn.getAttribute("data-tab"));
-    });
-  }
-
-  wireTabs();
-  $("btnClose").addEventListener("click", closeModal);
-  $("modalBack").addEventListener("click", (e)=>{ if(e.target === $("modalBack")) closeModal(); });
-
-  $("btnSave").addEventListener("click", ()=>{
-    if(editId){ commitEdit(); return; }
-    addLogFromModal();
-    closeModal();
-  });
-  $("btnPass").addEventListener("click", ()=>{ doPass(); closeModal(); });
-
-  $("btnCopy").addEventListener("click", copyTableForNotion);
-  $("btnExport").addEventListener("click", exportJSON);
-  $("btnImport").addEventListener("click", importJSON);
-  $("btnClear").addEventListener("click", clearAll);
-
-  $("btnEnableNotif").addEventListener("click", toggleNotif);
-
-  $("manualTimeToggle").addEventListener("change", ()=>{ setManualUI(); computeTimesPreview(); });
-  $("manualStart").addEventListener("change", ()=>{ setManualUI(); computeTimesPreview(); });
-  $("manualEnd").addEventListener("change", ()=>{ setManualUI(); computeTimesPreview(); });
-
-  // Start
-  load();
-  document.addEventListener("visibilitychange", ()=>{ setNotifPill(); updateHeaderTimes(); });
-  setInterval(tick, 1000);
-})();
-</script>
 </body>
 </html>
+  // Top tab navigation (no overlay)
+  function showView(name){
+    ["results","record","settings"].forEach(v=>{
+      const el = $("view-"+v);
+      if(el) el.classList.toggle("active", v===name);
+    });
+    const bar = $("topTabs");
+    if(bar){
+      bar.querySelectorAll(".tab2").forEach(t=>t.classList.toggle("active", t.getAttribute("data-view")===name));
+    }
+    if(name==="record"){ setActiveTab && setActiveTab("content"); }
+    window.scrollTo({top:0, behavior:"instant"});
+  }
+  (function(){
+    const bar = $("topTabs");
+    if(bar){
+      bar.addEventListener("click", (e)=>{
+        const t = e.target.closest(".tab2");
+        if(!t) return;
+        showView(t.getAttribute("data-view"));
+      });
+    }
+  })();
+
+
