@@ -252,6 +252,126 @@ td[data-label="내용"], td[data-label="참고/메모"], td[data-label="반성/�
   overflow-wrap: anywhere;
   word-break: break-word; /* 긴 단어/URL도 칸 안에서 줄바꿈 */
 }
+
+    /* === 요청 수정: 내용/메모/반성 칸 비율(4:5:5) 고정 + 작업버튼 정렬 === */
+    table[aria-label="기록표"]{ table-layout:fixed; }
+    /* 고정폭 컬럼: 시작70 + 종료70 + 소요70 + 작업110 = 320px */
+    table[aria-label="기록표"] th:nth-child(3),
+    table[aria-label="기록표"] td:nth-child(3){ width: calc((100% - 320px) * 0.285714); } /* 4/14 */
+    table[aria-label="기록표"] th:nth-child(4),
+    table[aria-label="기록표"] td:nth-child(4){ width: calc((100% - 320px) * 0.357143); } /* 5/14 */
+    table[aria-label="기록표"] th:nth-child(5),
+    table[aria-label="기록표"] td:nth-child(5){ width: calc((100% - 320px) * 0.357143); } /* 5/14 */
+
+    table[aria-label="기록표"] td:nth-child(3),
+    table[aria-label="기록표"] td:nth-child(4),
+    table[aria-label="기록표"] td:nth-child(5){ word-break:break-word; overflow-wrap:anywhere; }
+
+    /* 작업(수정/삭제) 버튼이 칸 안에 안정적으로 들어오게 */
+    table[aria-label="기록표"] th:nth-child(7),
+    table[aria-label="기록표"] td:nth-child(7){ text-align:center; white-space:nowrap; }
+    table[aria-label="기록표"] td:nth-child(7) button{
+      width:48px;
+      padding:6px 8px;
+      font-size:12px;
+      line-height:1.1;
+      margin:0 4px;
+      box-sizing:border-box;
+      vertical-align:middle;
+    }
+
+
+/* === FIX (요청1): 내용/메모/반성 칼럼 고정 비율 4:5:5 === */
+table[aria-label="기록표"]{ table-layout: fixed; width:100%; }
+table[aria-label="기록표"] thead th:nth-child(3),
+table[aria-label="기록표"] tbody td:nth-child(3){ width: calc((100% - 320px) / 14 * 4); }
+table[aria-label="기록표"] thead th:nth-child(4),
+table[aria-label="기록표"] tbody td:nth-child(4){ width: calc((100% - 320px) / 14 * 5); }
+table[aria-label="기록표"] thead th:nth-child(5),
+table[aria-label="기록표"] tbody td:nth-child(5){ width: calc((100% - 320px) / 14 * 5); }
+
+/* === FIX (요청2): 작업(수정/삭제) 버튼이 칸 밖으로 안 튀어나오게 중앙 정렬 === */
+table[aria-label="기록표"] thead th:nth-child(7),
+table[aria-label="기록표"] tbody td:nth-child(7){ overflow:hidden; }
+table[aria-label="기록표"] tbody td:nth-child(7){
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  white-space:nowrap;
+}
+table[aria-label="기록표"] tbody td:nth-child(7) button{
+  padding: 8px 10px;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+/* ===== Requested fixes (only) ===== */
+/* 1) 내용 : 참고/메모 : 반성/칭찬 = 4 : 5 : 5 (fixed ratio) */
+th[data-label="내용"], td[data-label="내용"]{ width: 28.571% !important; }
+th[data-label="참고/메모"], td[data-label="참고/메모"]{ width: 35.714% !important; }
+th[data-label="반성/칭찬"], td[data-label="반성/칭찬"]{ width: 35.714% !important; }
+
+/* 2) 작업(수정/삭제) 버튼: 가운데 정렬 + 칸 안에 안정적으로 */
+td[data-label="작업"]{
+  text-align: center !important;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+td[data-label="작업"] button{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 4px !important;
+  max-width: 48% !important;
+  box-sizing: border-box !important;
+}
+
+
+/* ===== Requested fixes v11 (strong, results table only) ===== */
+/* Force fixed table layout so column widths apply */
+table{ table-layout: fixed !important; width:100% !important; }
+
+/* Keep non-target columns reasonably compact */
+th:nth-child(1), td:nth-child(1){ width: 68px !important; } /* 시작 */
+th:nth-child(2), td:nth-child(2){ width: 68px !important; } /* 종료 */
+th:nth-child(6), td:nth-child(6){ width: 86px !important; } /* 소요 */
+th:nth-child(7), td:nth-child(7){ width: 124px !important; } /* 작업 */
+
+/* 4:5:5 ratio for (내용=3), (참고/메모=4), (반성/칭찬=5)
+   remaining width = 100% - fixed columns above */
+th:nth-child(3), td:nth-child(3){
+  width: calc((100% - 68px - 68px - 86px - 124px) * 4 / 14) !important;
+}
+th:nth-child(4), td:nth-child(4){
+  width: calc((100% - 68px - 68px - 86px - 124px) * 5 / 14) !important;
+}
+th:nth-child(5), td:nth-child(5){
+  width: calc((100% - 68px - 68px - 86px - 124px) * 5 / 14) !important;
+}
+
+/* Actions buttons: center with ~1mm side padding */
+td:nth-child(7){
+  text-align:center !important;
+  padding-left: 4px !important;  /* ~1mm */
+  padding-right: 4px !important; /* ~1mm */
+}
+td:nth-child(7) .btn, td:nth-child(7) button{
+  margin-left: 4px !important;
+  margin-right: 4px !important;
+}
+td:nth-child(7) .actions, td:nth-child(7) .actionButtons{
+  display:flex !important;
+  justify-content:center !important;
+  gap: 8px !important;
+}
+
+
+
+
+
+
+
 </style>
 </head>
 <body>
