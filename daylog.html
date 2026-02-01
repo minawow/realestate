@@ -844,6 +844,8 @@ function persist(){
     }catch(_){}
 
     try{ logs = JSON.parse(localStorage.getItem(K_LOGS) || "[]") || []; }catch(e){ logs = []; }
+    // 날짜가 바뀌었고 현재 기록이 비어 있으면, 자동으로 '오늘' 작업일로 맞춰요.
+    try{ const today = yyyyMmDd(new Date()); const active = getActiveDate(); if(active !== today && (!logs || !logs.length)) setActiveDate(today); }catch(_){ }
     lastEnd = parseLast();
     if(!lastEnd) saveLast(new Date());
     render();
@@ -922,7 +924,20 @@ function persist(){
     localStorage.setItem(ARCHIVE_KEY, JSON.stringify(obj));
   }
 
-  function getActiveDate(){
+  
+  // ---- Archive backward compatibility helpers ----
+  function getDayLogs(dayObj){
+    if(!dayObj) return [];
+    const arr = dayObj.logs || dayObj.items || dayObj.records || dayObj.rows || dayObj.entries || [];
+    return Array.isArray(arr) ? arr : [];
+  }
+  function setDayLogs(dayObj, logsArr){
+    dayObj.logs = Array.isArray(logsArr) ? logsArr : [];
+    delete dayObj.items; delete dayObj.records; delete dayObj.rows; delete dayObj.entries;
+    return dayObj;
+  }
+
+function getActiveDate(){
     const saved = localStorage.getItem(ACTIVE_DATE_KEY);
     if(saved && /^\d{4}-\d{2}-\d{2}$/.test(saved)) return saved;
     const today = yyyyMmDd(new Date());
@@ -946,26 +961,43 @@ function persist(){
   }
 
   function closeDay(){
+    const activeYmd = getActiveDate();
+    const todayYmd = yyyyMmDd(new Date());
+
     if(!logs.length){
-      // 그래도 날짜는 다음날로 넘길 수 있게 해줌
+      // 기록이 없어도 표만 리셋(저장 없음)
       if(confirm("오늘 기록이 비어 있어요. 그래도 '하루 마감'하고 표를 리셋할까요?")){
-        advanceActiveDateBy1();
-        clearAll(false); // don't confirm again inside
+        logs = [];
+        persist();
+        saveLast(new Date());
+        render();
+        // 과거 날짜를 보고 있었다면 '오늘'로 되돌림
+        if(activeYmd !== todayYmd) setActiveDate(todayYmd);
       }
       return;
     }
 
-    const activeYmd = getActiveDate();
     const d = new Date(activeYmd+"T00:00:00");
     const yymm = yyyyMm(d);
     const archive = loadArchive();
     archive[yymm] = archive[yymm] || { month: yymm, days: [] };
 
-    // 하루 단위로 저장 (같은 날짜가 이미 있으면 덮어쓰기)
-    const dayEntry = { date: activeYmd, weekday: weekdayKo(d), logs };
+    // ✅ 같은 날짜에 '하루 마감'을 여러 번 눌러도: 새 날짜로 만들지 않고 같은 날짜에 "누적 저장"
+    const newLogs = JSON.parse(JSON.stringify(logs || []));
     const idx = archive[yymm].days.findIndex(x=>x.date===activeYmd);
-    if(idx>=0) archive[yymm].days[idx] = dayEntry;
-    else archive[yymm].days.push(dayEntry);
+
+    if(idx>=0){
+      const existing = archive[yymm].days[idx] || { date: activeYmd, weekday: weekdayKo(d), logs: [] };
+      existing.weekday = weekdayKo(d);
+      existing.logs = getDayLogs(existing).concat(newLogs);
+      setDayLogs(existing, existing.logs);
+
+      // 시간순 정렬(시작 → 종료)
+      existing.logs.sort((a,b)=> (String(a.start||"")).localeCompare(String(b.start||"")) || (String(a.end||"")).localeCompare(String(b.end||"")));
+      archive[yymm].days[idx] = existing;
+    }else{
+      archive[yymm].days.push(setDayLogs({ date: activeYmd, weekday: weekdayKo(d) }, newLogs));
+    }
 
     // 날짜순 정렬
     archive[yymm].days.sort((a,b)=> a.date.localeCompare(b.date));
@@ -977,10 +1009,12 @@ function persist(){
     saveLast(new Date());
     render();
 
-    // 다음 작업일로 자동 이동(오늘이 끝났다는 의미)
-    advanceActiveDateBy1();
+    // 같은 날짜에서 마감을 여러 번 눌러도 날짜는 유지.
+    // 과거 날짜를 마감한 경우엔 '오늘'로 돌아감.
+    if(activeYmd !== todayYmd) setActiveDate(todayYmd);
 
-    alert(`하루 마감 완료! (${activeYmd})\n이번달(${yymm})에 저장했어요.`);
+    alert(`하루 마감 완료! (${activeYmd})
+이번주 결과표 복사에서 확인하세요.`);
   }
 
   function advanceActiveDateBy1(){
@@ -1010,7 +1044,10 @@ function persist(){
       Object.keys(archive).forEach(mm=>{
         const block = archive[mm];
         (block?.days || []).forEach(d=>{
-          if(d.date >= startYmd && d.date <= endYmd) days.push(d);
+          if(d.date >= startYmd && d.date <= endYmd){
+            setDayLogs(d, getDayLogs(d));
+            days.push(d);
+          }
         });
       });
       days.sort((a,b)=> a.date.localeCompare(b.date));
@@ -1035,7 +1072,7 @@ function persist(){
         html += `<table style="border-collapse:collapse;width:100%;max-width:100%;">`;
         html += `<thead><tr>` + headers.map(h=>`<th style="border:1px solid #ddd;padding:6px 8px;background:#f6f7f9;text-align:left;">${esc(h)}</th>`).join("") + `</tr></thead>`;
         html += `<tbody>`;
-        (d.logs||[]).forEach(x=>{
+        (getDayLogs(d)||[]).forEach(x=>{
           html += `<tr>` +
             `<td style="border:1px solid #ddd;padding:6px 8px;">${esc(x.start)}</td>` +
             `<td style="border:1px solid #ddd;padding:6px 8px;">${esc(x.end)}</td>` +
@@ -1057,7 +1094,7 @@ function persist(){
       days.forEach(d=>{
         plain += `${d.date} (${d.weekday})\n`;
         plain += headers.join("\t") + "\n";
-        (d.logs||[]).forEach(x=>{
+        (getDayLogs(d)||[]).forEach(x=>{
           plain += [cell(x.start),cell(x.end),cell(x.content),cell(x.memo),cell(x.reflect),cell(x.dur)].join("\t") + "\n";
         });
         plain += "\n";
